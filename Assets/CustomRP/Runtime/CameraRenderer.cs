@@ -37,7 +37,7 @@ public partial class CameraRenderer
         }
 
         Setup();
-        lighting.Setup(context);
+        lighting.Setup(context, cullingResults);
         //绘制几何体
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         //绘制SRP不支持的着色器类型

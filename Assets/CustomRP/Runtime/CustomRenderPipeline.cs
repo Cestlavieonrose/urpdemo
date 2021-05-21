@@ -14,6 +14,8 @@ public class CustomRenderPipeline : RenderPipeline
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        //灯光使用线性强度
+        GraphicsSettings.lightsUseLinearIntensity = true;
     }
 
     //Unity 每一帧都会调用这个方法进行画面渲染 该方法是SRP的入口
