@@ -1,4 +1,4 @@
-﻿Shader "CustomRP/Unlit"
+﻿Shader "CustomRP/Lit"
 {
     Properties
     {
@@ -20,17 +20,25 @@
 
         Pass
         {
+            //光照模式定义
+            Tags
+            {
+                "LightMode" = "CustomLit"
+            }
             //定义混合模式
             Blend[_SrcBlend][_DstBlend]
             //是否写入深度
             ZWrite[_ZWrite]
            HLSLPROGRAM
+            #pragma target 3.5
            //使用shader feature 声明一个toggle开关对应的_CLIpping关键字
             #pragma shader_feature _CLIPPING
             #pragma multi_compile_instancing
-            #pragma vertex UnlitPassVertex
-            #pragma fragment UnlitPassFragment
-            #include "UnlitPass.hlsl"
+
+
+            #pragma vertex LitPassVertex
+            #pragma fragment LitPassFragment
+            #include "LitPass.hlsl"
            ENDHLSL
         }
     }

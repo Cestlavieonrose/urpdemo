@@ -5,6 +5,9 @@ using UnityEngine.Rendering;
 
 public partial class CameraRenderer
 {
+    
+    
+
     ScriptableRenderContext context;
 
     Camera camera;
@@ -15,6 +18,8 @@ public partial class CameraRenderer
     {
         name = buffName
     };
+
+    Lighting lighting = new Lighting();
     
     //自定义的相机渲染类
     public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
@@ -32,6 +37,7 @@ public partial class CameraRenderer
         }
 
         Setup();
+        lighting.Setup(context);
         //绘制几何体
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         //绘制SRP不支持的着色器类型
@@ -57,6 +63,7 @@ public partial class CameraRenderer
 
     //哪个shader的哪个Pass进行渲染
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    static ShaderTagId litShaderTahId = new ShaderTagId("CustomLit");
 
     //绘制可见物
     void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
@@ -74,6 +81,8 @@ public partial class CameraRenderer
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing
         };
+        //渲染CustomList表示的pass块
+        drawingSettings.SetShaderPassName(1, litShaderTahId);
         //设置哪些类型的渲染队列可以被绘制 这里只绘制不透明物体
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         //1. 绘制不透明物体
