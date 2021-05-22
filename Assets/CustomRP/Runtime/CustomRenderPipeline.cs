@@ -7,9 +7,11 @@ public class CustomRenderPipeline : RenderPipeline
 {
     CameraRenderer cameraRenderer = new CameraRenderer();
     bool useDynamicBatching, useGPUInstancing;
+    ShadowSetting shadowSetting;
     //测试SRP合批启用
-    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher)
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSetting shadowSetting)
     {
+        this.shadowSetting = shadowSetting;
         //设置合批使用状态
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;

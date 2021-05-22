@@ -37,6 +37,7 @@ struct Attributes
 struct Varyings
 {
     float4 positionCS:SV_POSITION;
+    float3 positionWS:VAR_POSITION;
     float2 baseUV:VAR_BASE_UV;
     //世界法线
     float3 normalWS:VAR_NORMAL;
@@ -57,6 +58,7 @@ Varyings LitPassVertex(Attributes input)
 
     float4 positionVP = TransformWorldToHClip(positionWS);
     outputs.positionCS = positionVP;
+    outputs.positionWS = positionWS;
 
     //计算缩放和偏移后的UV坐标
     float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
@@ -83,8 +85,13 @@ float4 LitPassFragment(Varyings input):SV_TARGET
     surface.alpha = c.a;
     surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+    surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 
+#if defined(_PREMULTIPLY_ALPHA)
+    BRDF brdf = GetBRDF(surface, true);
+#else
     BRDF brdf = GetBRDF(surface);
+#endif
     //通过表面属性计算最终光照结果
     float3 color = GetLighting(surface, brdf);
 

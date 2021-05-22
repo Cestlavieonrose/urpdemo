@@ -17,17 +17,25 @@ float OneMinusReflectivity(float metallic)
     return range - metallic*range;
 }
 
-
 //获取给定表面的BRDF数据
-BRDF GetBRDF(Surface surface)
+BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false)
 {
     BRDF brdf;
     float onMinusReflectivity = OneMinusReflectivity(surface.metallic);
     brdf.diffuse = surface.color * onMinusReflectivity;
+    //透明度预乘
+    if (applyAlphaToDiffuse)
+    {
+        brdf.diffuse *= surface.alpha;
+    }
+
 
     brdf.specular = lerp(MIN_REFLECTIVITY, surface.color, surface.metallic);
-    brdf.roughness = 1.0;
+
+    float percenptualRoughness = PerceptualSmoothnessToPerceptualRoughness(surface.smoothness);
+    brdf.roughness = PerceptualRoughnessToRoughness(percenptualRoughness);
     return brdf;
 }
+
 
 #endif

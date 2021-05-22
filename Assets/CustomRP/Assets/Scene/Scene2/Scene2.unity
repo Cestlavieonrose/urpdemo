@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0.99999905, b: 0.99999905, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  material: {fileID: 2100000, guid: 32a54e289b3a22b41a82615652c503b5, type: 2}
+  material: {fileID: 2100000, guid: 744f6e086a6cba5429cc5df0f92fbfbc, type: 2}
 --- !u!4 &58268740
 Transform:
   m_ObjectHideFlags: 0
@@ -291,6 +291,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0.7830189, g: 0.114498034, b: 0.114498034, a: 1}
+  cutoff: 0.5
+  metallic: 0
+  smoothness: 0.5
 --- !u!65 &399509228
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -398,6 +401,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0.7924528, g: 0.22054112, b: 0.77277386, a: 1}
+  cutoff: 0.5
+  metallic: 0
+  smoothness: 0.5
 --- !u!65 &477066025
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -505,6 +511,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0.2264151, g: 0.18689926, b: 0.22506182, a: 1}
+  cutoff: 0.5
+  metallic: 0
+  smoothness: 0.5
 --- !u!65 &1582660474
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -769,6 +778,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0.34494704, g: 0.9716981, b: 0.26125845, a: 1}
+  cutoff: 0.5
+  metallic: 0
+  smoothness: 0.5
 --- !u!1 &1851699237
 GameObject:
   m_ObjectHideFlags: 0
@@ -802,6 +814,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0.17443931, g: 0.55276126, b: 0.754717, a: 1}
+  cutoff: 0.5
+  metallic: 0
+  smoothness: 0.5
 --- !u!65 &1851699239
 BoxCollider:
   m_ObjectHideFlags: 0
