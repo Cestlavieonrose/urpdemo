@@ -2,28 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-
+////相机渲染管理类：单独控制每个相机的渲染
 public partial class CameraRenderer
 {
-    
-    
-
     ScriptableRenderContext context;
-
     Camera camera;
-
-    const string buffName = "My Render Camera";
+    const string bufferName = "Render Camera";
 
     CommandBuffer buffer = new CommandBuffer
     {
-        name = buffName
+        name = bufferName
     };
 
+    //存储相机剔除后的结果
+    CullingResults cullingResults;
+    //哪个shader的哪个Pass进行渲染
+    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
+    //光照实例
     Lighting lighting = new Lighting();
     
     //自定义的相机渲染类
     public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, 
-                    bool useGPUInstancing, ShadowSetting shadowSetting)
+                    bool useGPUInstancing, ShadowSettings shadowSetting)
     {
         this.context = context;
         this.camera = camera;
@@ -40,6 +41,8 @@ public partial class CameraRenderer
         ExecuteBuffer();
         //光源数据和阴影数据发送到GPU计算光照
         lighting.Setup(context, cullingResults, shadowSetting);
+        buffer.EndSample(SampleName);
+
         Setup();
         //绘制几何体
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
@@ -50,22 +53,6 @@ public partial class CameraRenderer
         lighting.Cleanup();
         Submit();
     }
-
-    //设置相机的属性和矩阵
-    void Setup()
-    {
-        //设置VP矩阵
-        context.SetupCameraProperties(camera);
-        //得到相机的clear flags
-        CameraClearFlags flags = camera.clearFlags;
-        //设置相机清楚状态
-        buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
-        ExecuteBuffer();
-    }
-
-    //哪个shader的哪个Pass进行渲染
-    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-    static ShaderTagId litShaderTahId = new ShaderTagId("CustomLit");
 
     //绘制可见物
     void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
@@ -84,7 +71,7 @@ public partial class CameraRenderer
             enableInstancing = useGPUInstancing
         };
         //渲染CustomList表示的pass块
-        drawingSettings.SetShaderPassName(1, litShaderTahId);
+        drawingSettings.SetShaderPassName(1, litShaderTagId);
         //设置哪些类型的渲染队列可以被绘制 这里只绘制不透明物体
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         //1. 绘制不透明物体
@@ -109,14 +96,26 @@ public partial class CameraRenderer
         context.Submit();
     }
 
+     //设置相机的属性和矩阵
+    void Setup()
+    {
+        //设置VP矩阵
+        context.SetupCameraProperties(camera);
+        //得到相机的clear flags
+        CameraClearFlags flags = camera.clearFlags;
+        //设置相机清楚状态
+        buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
+            flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
+        buffer.BeginSample(SampleName);  
+        ExecuteBuffer();
+    }
+    //执行缓冲区命令
     void ExecuteBuffer()
     {
         context.ExecuteCommandBuffer(buffer);
         buffer.Clear();
     }
 
-    //存储剔除后的结果数据
-    CullingResults cullingResults;
     //裁剪
     bool Cull(float maxShadowDistance)
     {

@@ -48,23 +48,20 @@ struct Varyings
 //顶点函数
 Varyings LitPassVertex(Attributes input)
 {
-    Varyings outputs;
+
+    Varyings output;
     //用来提取顶点输入结构体中的渲染对象的索引，并将其存储到Attributes的UNITY_VERTEX_INPUT_INSTANCE_ID中
-    UNITY_SETUP_INSTANCE_ID(input);
+	UNITY_SETUP_INSTANCE_ID(input);
     //将对象位置和索引输出 若Varyings定义了UNITY_VERTEX_INPUT_INSTANCE_ID，则进行复制
-    UNITY_TRANSFER_INSTANCE_ID(input, outputs);
-    float3 positionWS = TransformObjectToWorld(input.positionOS);
-    //计算世界空间的法线
-    outputs.normalWS = TransformObjectToWorldNormal(input.normalOS);
-
-    float4 positionVP = TransformWorldToHClip(positionWS);
-    outputs.positionCS = positionVP;
-    outputs.positionWS = positionWS;
-
-    //计算缩放和偏移后的UV坐标
-    float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
-    outputs.baseUV = input.baseUV*baseST.xy + baseST.zw;
-    return outputs;
+	UNITY_TRANSFER_INSTANCE_ID(input, output);
+	output.positionWS = TransformObjectToWorld(input.positionOS);
+	output.positionCS = TransformWorldToHClip(output.positionWS);
+	//计算世界空间的法线
+	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+	//计算缩放和偏移后的UV坐标
+	float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
+	output.baseUV = input.baseUV * baseST.xy + baseST.zw;
+	return output;
 }
 
 //片元函数
@@ -72,32 +69,33 @@ float4 LitPassFragment(Varyings input):SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-
-    //访问获取材质的颜色属性
-    float4 c = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor)*baseMap;
+	// 通过UNITY_ACCESS_INSTANCED_PROP访问material属性
+	float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
+	float4 base = baseMap * baseColor;
 #if defined(_CLIPPING)
-    //透明度低于阈值的偏远进行舍弃
-    clip(c.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+	//透明度低于阈值的片元进行舍弃
+	clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
 #endif
-
-    Surface surface;
-    surface.position = input.positionWS;
-    surface.normal = normalize(input.normalWS);
-    surface.color = c.rgb;
-    surface.alpha = c.a;
-    surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
-    surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
-    surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
-
+	//定义一个surface并填充属性
+	Surface surface;
+	surface.position = input.positionWS;
+	surface.normal = normalize(input.normalWS);
+	//得到视角方向
+	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
+	
+	surface.color = base.rgb;
+	surface.alpha = base.a;
+	surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
+	surface.smoothness =UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+	
+	//通过表面属性和BRDF计算最终光照结果
 #if defined(_PREMULTIPLY_ALPHA)
-    BRDF brdf = GetBRDF(surface, true);
+	BRDF brdf = GetBRDF(surface, true);
 #else
-    BRDF brdf = GetBRDF(surface);
+	BRDF brdf = GetBRDF(surface);
 #endif
-    //通过表面属性计算最终光照结果
-    float3 color = GetLighting(surface, brdf);
-
-    return float4(color, surface.alpha);
+	float3 color = GetLighting(surface, brdf);
+	return float4(color, surface.alpha);
 }
 
 #endif

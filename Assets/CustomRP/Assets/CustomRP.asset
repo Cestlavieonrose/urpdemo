@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CustomRP
   m_EditorClassIdentifier: 
   useDynamicBatching: 1
-  useGPUInstancing: 0
+  useGPUInstancing: 1
   useSRPBatcher: 1
   shadows:
     MaxDistance: 15

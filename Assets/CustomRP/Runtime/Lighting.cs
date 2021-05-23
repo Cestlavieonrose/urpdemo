@@ -4,12 +4,10 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+//灯光管理类
 public class Lighting
 {
-    //存储相机剔除后的结果
-    CullingResults cullingResults;
     const string bufferName = "Lighting";
-
     CommandBuffer buffer = new CommandBuffer
     { 
         name = bufferName
@@ -21,20 +19,26 @@ public class Lighting
     static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
     static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
     static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
-    //存储可见光颜色和方向
+    static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
+    //存储定向光的颜色和方向
     static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
     static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
+    //存储定向光的阴影数据
+    static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
+    //存储相机剔除后的结果
+    CullingResults cullingResults;
 
     Shadows shadows = new Shadows();
 
-    public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSetting shadowSetting)
+    public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSetting)
     {
         this.cullingResults = cullingResults;
         buffer.BeginSample(bufferName);
         //传递阴影数据
         shadows.Setup(context, cullingResults, shadowSetting);
-        //发送光源数据
+        //存储并发送所有光源数据
         SetupLights();
+        //渲染阴影
         shadows.Render();
         buffer.EndSample(bufferName);
         context.ExecuteCommandBuffer(buffer);
@@ -46,15 +50,9 @@ public class Lighting
     {
         dirLightColors[index] = visibleLight.finalColor;//已经应用了光照强度
         dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
-        shadows.ReserveDirectionalShadows(visibleLight.light, index);
         //存储阴影数据
         dirLightShadowData[index] = shadows.ReserveDirectionalShadows(visibleLight.light, index);
-
     }
-
-    static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
-    //存储阴影数据
-    static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
 
     //将场景主光源的光照颜色和方向传递到GPU
     void SetupLights()

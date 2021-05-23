@@ -5,28 +5,30 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
+//相机渲染管理类：单独控制每个相机的渲染
 public partial class CameraRenderer
 {
 
     partial void DrawUnsupportedShaders();
     partial void DrawGizmos();
     partial void PrepareForSceneWindow();
+
     partial void PrepareBuffer();
 
 #if UNITY_EDITOR
     //SRP不支持的着色器标签类型
-    static ShaderTagId[] legacyShaderTagIds =
-    {
+    static ShaderTagId[] legacyShaderTagIds = {
         new ShaderTagId("Always"),
         new ShaderTagId("ForwardBase"),
         new ShaderTagId("PrepassBase"),
         new ShaderTagId("Vertex"),
         new ShaderTagId("VertexLMRGBM"),
-        new ShaderTagId("VertexLM")
+        new ShaderTagId("VertexLM"),
     };
 
     //绘制成使用错误材质的粉红颜色
     static Material errorMat;
+    string SampleName { get; set; }
 
     //绘制SRP不支持的着色器类型
     partial void DrawUnsupportedShaders()
@@ -72,7 +74,7 @@ public partial class CameraRenderer
             ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
         }
     }
-    string SampleName { get; set; }
+    
     //使用相机名字去设置命令缓冲区的名字
     partial void PrepareBuffer()
     {

@@ -5,13 +5,13 @@ using UnityEngine.Rendering;
 
 public class CustomRenderPipeline : RenderPipeline
 {
-    CameraRenderer cameraRenderer = new CameraRenderer();
+    CameraRenderer renderer = new CameraRenderer();
     bool useDynamicBatching, useGPUInstancing;
-    ShadowSetting shadowSetting;
+    ShadowSettings shadowSettings;
     //测试SRP合批启用
-    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSetting shadowSetting)
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSettings shadowSettings)
     {
-        this.shadowSetting = shadowSetting;
+        this.shadowSettings = shadowSettings;
         //设置合批使用状态
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
@@ -25,7 +25,7 @@ public class CustomRenderPipeline : RenderPipeline
     {
         foreach(Camera camera in cameras)
         {
-            cameraRenderer.Render(context, camera, useDynamicBatching, useGPUInstancing, shadowSetting);
+            renderer.Render(context, camera, useDynamicBatching, useGPUInstancing, shadowSettings);
         }
 
     }

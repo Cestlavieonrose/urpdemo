@@ -17,25 +17,27 @@ CBUFFER_END
 //阴影数据信息
 struct DirectionalShadowData
 {
-    float strength;
-    int tileIndex;
+	float strength;
+	int tileIndex;
 };
 
 //采样阴影图集
-float SampleDirectionalShadowAtalas(float3 positionSTD)
-{
-    return SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTD);
+float SampleDirectionalShadowAtlas(float3 positionSTS) {
+	return SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTS);
 }
 
-//计算阴影衰减
+//得到级联阴影强度
 float GetDirectionalShadowAttenuation(DirectionalShadowData directional, Surface surfaceWS) {
-    if (directional.strength<=0.0)
-    {
-        return 1.0;
-    }
+
+	if (directional.strength <= 0.0) {
+		return 1.0;
+	}
 	//通过阴影转换矩阵和表面位置得到在阴影纹理(图块)空间的位置，然后对图集进行采样 
 	float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position, 1.0)).xyz;
-	float shadow = SampleDirectionalShadowAtalas(positionSTS);
+	float shadow = SampleDirectionalShadowAtlas(positionSTS);
+	
+
+	//最终衰减结果是阴影强度和采样衰减的线性差值
 	return lerp(1.0, shadow, directional.strength);
 }
 #endif

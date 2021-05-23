@@ -2,7 +2,7 @@
 
 //阴影属性设置
 [System.Serializable]
-public class ShadowSetting
+public class ShadowSettings
 {
     //阴影最大距离
     [Min(0f)]
