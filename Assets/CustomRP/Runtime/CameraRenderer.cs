@@ -22,7 +22,8 @@ public partial class CameraRenderer
     Lighting lighting = new Lighting();
     
     //自定义的相机渲染类
-    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, 
+                    bool useGPUInstancing, ShadowSetting shadowSetting)
     {
         this.context = context;
         this.camera = camera;
@@ -31,19 +32,22 @@ public partial class CameraRenderer
         //再game视图绘制的几何体也绘制到Scene视图中
         PrepareForSceneWindow();
 
-        if (!Cull())
+        if (!Cull(shadowSetting.MaxDistance))
         {
             return;
         }
-
+        buffer.BeginSample(SampleName);
+        ExecuteBuffer();
+        //光源数据和阴影数据发送到GPU计算光照
+        lighting.Setup(context, cullingResults, shadowSetting);
         Setup();
-        lighting.Setup(context, cullingResults);
         //绘制几何体
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         //绘制SRP不支持的着色器类型
         DrawUnsupportedShaders();
         //绘制Gizmos
         DrawGizmos();
+        lighting.Cleanup();
         Submit();
     }
 
@@ -56,9 +60,7 @@ public partial class CameraRenderer
         CameraClearFlags flags = camera.clearFlags;
         //设置相机清楚状态
         buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
-        buffer.BeginSample(SampleName);
         ExecuteBuffer();
-        
     }
 
     //哪个shader的哪个Pass进行渲染
@@ -116,12 +118,14 @@ public partial class CameraRenderer
     //存储剔除后的结果数据
     CullingResults cullingResults;
     //裁剪
-    bool Cull()
+    bool Cull(float maxShadowDistance)
     {
         ScriptableCullingParameters p;
         //得到需要进行剔除检查的所有物体
         if (camera.TryGetCullingParameters(out p))
         {
+            //得到的最大距离和相机的farPanel进行比较，取最小的那个作为阴影距离
+            p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
             //正式剔除
             cullingResults = context.Cull(ref p);
             return true;

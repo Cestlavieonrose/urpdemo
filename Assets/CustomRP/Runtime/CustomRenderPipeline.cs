@@ -25,7 +25,7 @@ public class CustomRenderPipeline : RenderPipeline
     {
         foreach(Camera camera in cameras)
         {
-            cameraRenderer.Render(context, camera, useDynamicBatching, useGPUInstancing);
+            cameraRenderer.Render(context, camera, useDynamicBatching, useGPUInstancing, shadowSetting);
         }
 
     }

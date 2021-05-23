@@ -35,7 +35,7 @@
             Blend[_SrcBlend][_DstBlend]
             //是否写入深度
             ZWrite[_ZWrite]
-           HLSLPROGRAM
+        HLSLPROGRAM
             #pragma target 3.5
            //使用shader feature 声明一个toggle开关对应的_CLIpping关键字
             #pragma shader_feature _CLIPPING
@@ -46,7 +46,27 @@
             #pragma vertex LitPassVertex
             #pragma fragment LitPassFragment
             #include "LitPass.hlsl"
-           ENDHLSL
+        ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "ShadowCaster"
+            }
+            ColorMask 0
+
+        HLSLPROGRAM
+            #pragma target 3.5
+           //使用shader feature 声明一个toggle开关对应的_CLIpping关键字
+            #pragma shader_feature _CLIPPING
+            #pragma multi_compile_instancing
+            #pragma vertex ShadowCasterPassVertex
+            #pragma fragment ShadowCasterPassFragment
+            #include "ShadowCasterPass.hlsl"
+        ENDHLSL
+
         }
     }
     CustomEditor "CustomShaderGUI"

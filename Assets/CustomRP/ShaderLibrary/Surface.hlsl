@@ -4,6 +4,8 @@
 
 struct Surface
 {
+    //表面位置
+    float3 position;
     float3 normal;
     float3 color;
     float alpha;

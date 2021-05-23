@@ -23,7 +23,7 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light)
 //计算入射光照
 float3 IncomingLight(Surface surface, Light light)
 {
-    return saturate(dot(surface.normal, light.direction))*light.color;
+    return saturate(dot(surface.normal, light.direction)*light.attenuation)*light.color;
 }
 
 //入射光照乘以BRDF的漫反射部分，得到最终的照明
@@ -39,7 +39,7 @@ float3 GetLighting(Surface surface, BRDF brdf)
     float3 coulor = 0.0;
     for (int i=0; i< GetDirectionalLightCount(); i++)
     {
-        coulor += GetLighting(surface, brdf, GetDirectionalLight(i));
+        coulor += GetLighting(surface, brdf, GetDirectionalLight(i, surface));
     }
     return coulor;
 }

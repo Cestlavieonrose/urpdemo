@@ -13,5 +13,9 @@ MonoBehaviour:
   m_Name: CustomRP
   m_EditorClassIdentifier: 
   useDynamicBatching: 1
-  useGPUInstancing: 1
+  useGPUInstancing: 0
   useSRPBatcher: 1
+  shadows:
+    MaxDistance: 15
+    directional:
+      atlasSize: 512

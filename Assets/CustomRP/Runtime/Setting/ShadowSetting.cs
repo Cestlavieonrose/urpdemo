@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 //阴影属性设置
 [System.Serializable]
@@ -30,8 +28,7 @@ public class ShadowSetting
     public Directional directional = new Directional
     {
         atlasSize = TextureSize._1024
-    };
-    
+    };    
 }
 
 
