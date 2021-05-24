@@ -38,6 +38,9 @@ public class Shadows
 
     static int shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
 
+    static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+
+
     static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
 
     //存储光源的阴影转换矩阵
@@ -112,6 +115,8 @@ public class Shadows
         buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
         buffer.SetGlobalFloat(shadowDistanceId, shadowSetting.MaxDistance);
+        //阴影过渡距离发送到GPU
+        buffer.SetGlobalVector(shadowDistanceFadeId, new Vector4(1f/shadowSetting.MaxDistance, 1f/shadowSetting.distanceFade));
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }

@@ -17,6 +17,8 @@ float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
 //阴影转换矩阵
 float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT*MAX_CASCADE_COUNT];
 float _ShadowDistance;
+//阴影过渡距离
+float4 _ShadowDistanceFade;
 CBUFFER_END
 
 //阴影数据
@@ -27,11 +29,17 @@ struct ShadowData
 	float strength;
 };
 
+//公式计算阴影过渡强度
+float FadeShadowStrength (float distance, float scale, float fade)
+{
+    return saturate((1.0 - distance*scale)*fade);
+}
+
 //得到世界空间的表面阴影数据
 ShadowData GetShadowData(Surface surfaceWS)
 {
 	ShadowData data;
-	data.strength = surfaceWS.depth < _ShadowDistance ? 1.0: 0.0;
+	data.strength = FadeShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);//surfaceWS.depth < _ShadowDistance ? 1.0: 0.0;
 	int i;
 	//如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联索引
 	for (i=0; i< _CascadeCount; i++)

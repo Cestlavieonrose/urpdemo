@@ -5,8 +5,11 @@
 public class ShadowSettings
 {
     //阴影最大距离
-    [Min(0f)]
+    [Min(0.001f)]
     public float MaxDistance = 100f;
+    //阴影过度距离
+    [Range(0.001f, 1f)]
+    public float distanceFade = 0.1f;
     //阴影贴图大小
     public enum TextureSize
     {
