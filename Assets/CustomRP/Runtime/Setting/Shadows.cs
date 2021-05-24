@@ -87,6 +87,18 @@ public class Shadows
             RenderDirectionalShadows();
         }
     }
+    //集联数据
+    static int cascadeDataId = Shader.PropertyToID("_CascadeData");
+    static Vector4[] cascadeData = new Vector4[maxCascades];
+
+    void SetCascadeData(int index, Vector4 cullingSpheres, float tileSize)
+    {
+        float texelSize = 2f * cullingSpheres.w/tileSize;
+        cullingSpheres.w *= cullingSpheres.w;
+        cascadeCullingSpheres[index] = cullingSpheres;
+
+        cascadeData[index] = new Vector4(1f/cullingSpheres.w, texelSize*1.4142136f);
+    }
 
     //渲染定向光阴影
     void RenderDirectionalShadows()
@@ -113,6 +125,7 @@ public class Shadows
         //将级联数量和包围球数据发送到GPU
         buffer.SetGlobalInt(cascadeCountId, shadowSetting.directional.cascadeCount);
         buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
+        buffer.SetGlobalVectorArray(cascadeDataId, cascadeData);
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
         buffer.SetGlobalFloat(shadowDistanceId, shadowSetting.MaxDistance);
         //阴影过渡距离发送到GPU
@@ -143,18 +156,21 @@ public class Shadows
             if (index == 0)
             {
                 Vector4 cullingSpheres = splitData.cullingSphere;
-                cullingSpheres.w *= cullingSpheres.w;
-                cascadeCullingSpheres[i] = cullingSpheres;
-                
+                SetCascadeData(index, cullingSpheres, tileSize);      
             }
             settings.splitData = splitData;
             //调整图块索引，它等于光源的图块偏移加上级联的索引
             int tileIndex = tileOffset + i;
             dirShadowMatrices[tileIndex] = ConvertToAtalasMatrix(projectionMatrix * viewMatrix, SetTileViewport(tileIndex, split, tileSize), split);
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+
+            //设置深度偏差
+          //  buffer.SetGlobalDepthBias(0f, 3f);
+
             ExecuteBuffer();
             //只渲染"LightMode" = "ShadowCaster"的通道
             context.DrawShadows(ref settings);
+           // buffer.SetGlobalDepthBias(0f, 0f);
         }
     }
 

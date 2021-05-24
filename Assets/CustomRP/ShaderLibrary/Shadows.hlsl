@@ -14,6 +14,7 @@ CBUFFER_START(_CustomShadows)
 //级联数量和包围球数据
 int _CascadeCount;
 float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
+float4 _CascadeData[MAX_CASCADE_COUNT];
 //阴影转换矩阵
 float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT*MAX_CASCADE_COUNT];
 float _ShadowDistance;
@@ -51,7 +52,7 @@ ShadowData GetShadowData(Surface surfaceWS)
             //如果是最后一个集联，进行阴影过渡
             if (i == _CascadeCount-1)
             {
-                data.strength = FadeShadowStrength(distaceSqr, 1.0/sphere.w, _ShadowDistanceFade.z);
+                data.strength = FadeShadowStrength(distaceSqr, _CascadeData[i].x, _ShadowDistanceFade.z);
             }
 			break;
 		}
@@ -81,13 +82,15 @@ float SampleDirectionalShadowAtlas(float3 positionSTS) {
 }
 
 //得到级联阴影强度
-float GetDirectionalShadowAttenuation(DirectionalShadowData directional, Surface surfaceWS) {
+float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowData global, Surface surfaceWS) {
 
 	if (directional.strength <= 0.0) {
 		return 1.0;
 	}
+    //计算法线偏差
+    float3 normalBias = surfaceWS.normal * _CascadeData[global.cascadeIndex].y;
 	//通过阴影转换矩阵和表面位置得到在阴影纹理(图块)空间的位置，然后对图集进行采样 
-	float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position, 1.0)).xyz;
+	float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position+normalBias, 1.0)).xyz;
 	float shadow = SampleDirectionalShadowAtlas(positionSTS);
 	
 
