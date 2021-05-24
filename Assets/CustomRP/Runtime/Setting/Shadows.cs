@@ -32,6 +32,14 @@ public class Shadows
     int ShadowedDirectionalLightCount;
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
     static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
+
+    static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
+    static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
+
+    static int shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+
+    static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
+
     //存储光源的阴影转换矩阵
     static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount* maxCascades];
     public void Setup(
@@ -99,7 +107,11 @@ public class Shadows
         {
             RenderDirectionalShadows(i, split, tileSize);
         }
+        //将级联数量和包围球数据发送到GPU
+        buffer.SetGlobalInt(cascadeCountId, shadowSetting.directional.cascadeCount);
+        buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
+        buffer.SetGlobalFloat(shadowDistanceId, shadowSetting.MaxDistance);
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
@@ -119,6 +131,14 @@ public class Shadows
             cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex,
                 i, cascadeCount, ratios, tileSize, 0f, out Matrix4x4 viewMatrix,
             out Matrix4x4 projectionMatrix, out ShadowSplitData splitData);
+            //得到第一个光源的包围球数据
+            if (index == 0)
+            {
+                Vector4 cullingSpheres = splitData.cullingSphere;
+                cullingSpheres.w *= cullingSpheres.w;
+                cascadeCullingSpheres[i] = cullingSpheres;
+                
+            }
             settings.splitData = splitData;
             //调整图块索引，它等于光源的图块偏移加上级联的索引
             int tileIndex = tileOffset + i;

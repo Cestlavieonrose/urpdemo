@@ -28,22 +28,23 @@ int GetDirectionalLightCount() {
 }
 
 //获取方向光的阴影数据
-DirectionalShadowData GetDirectionalShadowData(int lightIndex) {
+DirectionalShadowData GetDirectionalShadowData(int lightIndex, ShadowData shadowData) {
 	DirectionalShadowData data;
-	data.strength = _DirectionalLightShadowData[lightIndex].x;
-	data.tileIndex = _DirectionalLightShadowData[lightIndex].y;
+	data.strength = _DirectionalLightShadowData[lightIndex].x * shadowData.strength;
+	data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
 	return data;
 }
 
 //获取目标索引定向光的属性
-Light GetDirectionalLight (int index,Surface surfaceWS) {
+Light GetDirectionalLight (int index,Surface surfaceWS, ShadowData shadowData) {
 	Light light;
 	light.color = _DirectionalLightColors[index].rgb;
 	light.direction = _DirectionalLightDirections[index].xyz;
 	//得到阴影数据
-	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index);
+	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index, shadowData);
 	//得到阴影衰减
 	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, surfaceWS);
+	//light.attenuation = shadowData.cascadeIndex%4; //查看球形包围盒的范围
 	return light;
 }
 

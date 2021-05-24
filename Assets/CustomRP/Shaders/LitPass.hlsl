@@ -82,6 +82,8 @@ float4 LitPassFragment(Varyings input):SV_TARGET
 	surface.normal = normalize(input.normalWS);
 	//得到视角方向
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
+	//获得表面深度
+	surface.depth = -TransformWorldToView(input.positionWS).z;
 	
 	surface.color = base.rgb;
 	surface.alpha = base.a;
@@ -94,6 +96,10 @@ float4 LitPassFragment(Varyings input):SV_TARGET
 #else
 	BRDF brdf = GetBRDF(surface);
 #endif
+
+	
+	
+
 	float3 color = GetLighting(surface, brdf);
 	return float4(color, surface.alpha);
 }
