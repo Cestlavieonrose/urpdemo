@@ -48,6 +48,11 @@ ShadowData GetShadowData(Surface surfaceWS)
 		float distaceSqr = DistanceSquared(surfaceWS.position, sphere.xyz);
 		if (distaceSqr < sphere.w)
 		{
+            //如果是最后一个集联，进行阴影过渡
+            if (i == _CascadeCount-1)
+            {
+                data.strength = FadeShadowStrength(distaceSqr, 1.0/sphere.w, _ShadowDistanceFade.z);
+            }
 			break;
 		}
 	}

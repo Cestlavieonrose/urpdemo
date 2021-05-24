@@ -116,7 +116,10 @@ public class Shadows
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
         buffer.SetGlobalFloat(shadowDistanceId, shadowSetting.MaxDistance);
         //阴影过渡距离发送到GPU
-        buffer.SetGlobalVector(shadowDistanceFadeId, new Vector4(1f/shadowSetting.MaxDistance, 1f/shadowSetting.distanceFade));
+        float f = 1f - shadowSetting.directional.cascadeFade;
+        buffer.SetGlobalVector(shadowDistanceFadeId, new Vector4(1f/shadowSetting.MaxDistance, 
+        1f/shadowSetting.distanceFade,
+        1f/(1f-f*f)));
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
