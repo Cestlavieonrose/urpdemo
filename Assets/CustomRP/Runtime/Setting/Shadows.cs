@@ -159,7 +159,7 @@ public class Shadows
             if (index == 0)
             {
                 Vector4 cullingSpheres = splitData.cullingSphere;
-                SetCascadeData(index, cullingSpheres, tileSize);      
+                SetCascadeData(i, cullingSpheres, tileSize);      
             }
             settings.splitData = splitData;
             //调整图块索引，它等于光源的图块偏移加上级联的索引
