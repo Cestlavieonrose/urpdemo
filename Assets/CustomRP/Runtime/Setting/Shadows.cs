@@ -65,7 +65,7 @@ public class Shadows
     }
 
     //存储可见光的阴影数据
-    public Vector2 ReserveDirectionalShadows(Light light, int visibleLightIndex)
+    public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
         //存储可见光源的索引，前提是开启了阴影投射，且强度不为0
         if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount && light.shadows != LightShadows.None && light.shadowStrength > 0f
@@ -79,7 +79,7 @@ public class Shadows
             };
             return new Vector3(light.shadowStrength, shadowSetting.directional.cascadeCount * ShadowedDirectionalLightCount++, light.shadowNormalBias);
         }
-        return Vector2.zero;
+        return Vector3.zero;
     }
 
     //渲染阴影
@@ -96,6 +96,7 @@ public class Shadows
 
     void SetCascadeData(int index, Vector4 cullingSpheres, float tileSize)
     {
+        //包围球直径除以阴影图块尺寸=纹素大小
         float texelSize = 2f * cullingSpheres.w/tileSize;
         cullingSpheres.w *= cullingSpheres.w;
         cascadeCullingSpheres[index] = cullingSpheres;

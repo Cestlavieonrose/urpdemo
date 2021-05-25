@@ -44,6 +44,13 @@ Varyings ShadowCasterPassVertex(Attributes input)
     float4 positionVP = TransformWorldToHClip(positionWS);
     outputs.positionCS = positionVP;
 
+//解决阴影深度因为近截面裁剪掉而出现却角或者镂空的问题
+    #if UNITY_REVERSED_Z
+        outputs.positionCS.z = min( outputs.positionCS.z,  outputs.positionCS.w*UNITY_NEAR_CLIP_VALUE);
+    #else
+        outputs.positionCS.z = max( outputs.positionCS.z,  outputs.positionCS.w*UNITY_NEAR_CLIP_VALUE);
+    #endif
+
     //计算缩放和偏移后的UV坐标
     float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
     outputs.baseUV = input.baseUV*baseST.xy + baseST.zw;
