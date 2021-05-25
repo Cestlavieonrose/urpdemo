@@ -42,6 +42,7 @@
             #pragma shader_feature _PREMULTIPLY_ALPHA
             //_代表默认 _DIRECTIONAL_PCF2
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile_instancing
 
 

@@ -37,6 +37,13 @@ public class ShadowSettings
         //集联淡入值
         [Range(0.001f, 1f)]
         public float cascadeFade;
+
+        public enum CascadeBlendMode
+        {
+            Hard, Soft, Dither
+        }
+
+        public CascadeBlendMode cascadeBlend;
     }
 
     //PCF滤波模式
@@ -48,6 +55,7 @@ public class ShadowSettings
         PCF7x7,
     }
 
+    
 
 
     //默认尺寸为1024
@@ -60,7 +68,8 @@ public class ShadowSettings
         cascadeRatio1 = 0.1f,
         cascadeRatio2 = 0.25f,
         cascadeRatio3 = 0.5f,
-        cascadeFade = 0.1f
+        cascadeFade = 0.1f,
+        cascadeBlend = Directional.CascadeBlendMode.Hard,
         
     };   
     

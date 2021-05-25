@@ -99,6 +99,12 @@ public class Shadows
     static int cascadeDataId = Shader.PropertyToID("_CascadeData");
     static Vector4[] cascadeData = new Vector4[maxCascades];
 
+    //级联混合模式
+    static string[] cascadeBlendKeywords = {
+        "_CASCADE_BLEND_SOFT",
+        "_CASCADE_BLEND_DITHER"
+    };
+
     void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
     {
         //包围球半径除以阴影图块大小=近似纹素大小
@@ -147,7 +153,8 @@ public class Shadows
                                     1f/shadowSetting.distanceFade,
                                     1f/(1f-f*f)));
         //设置PCF shader宏
-        SetKeywords();
+        SetKeywords(directionalFilterKeywords, (int)shadowSetting.directional.filter - 1);
+        SetKeywords(cascadeBlendKeywords, (int)shadowSetting.directional.cascadeBlend - 1);
         //传递图集大小和文素大小
         buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
         buffer.EndSample(bufferName);
@@ -246,18 +253,23 @@ public class Shadows
         "_DIRECTIONAL_PCF7",
     };
 
-    //设置关键字开启哪种PCF滤波模式
-    void SetKeywords()
+    /// <summary>
+    /// 设置关键字
+    /// </summary>
+    /// <param name="keywords"></param>
+    /// <param name="enabledIndex"></param>
+    void SetKeywords(string[] keywords, int enabledIndex)
     {
-        int enabledIndex = (int)shadowSetting.directional.filter - 1;
-        for (int i = 0; i < directionalFilterKeywords.Length; i++)
+        // int enabledIndex = (int)settings.directional.filter - 1;
+        for (int i = 0; i < keywords.Length; i++)
         {
             if (i == enabledIndex)
             {
-                buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
-            } else
+                buffer.EnableShaderKeyword(keywords[i]);
+            }
+            else
             {
-                buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+                buffer.DisableShaderKeyword(keywords[i]);
             }
         }
     }

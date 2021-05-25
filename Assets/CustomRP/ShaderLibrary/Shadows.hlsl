@@ -49,7 +49,7 @@ struct ShadowData
 };
 
 //公式计算阴影过渡强度
-float FadeShadowStrength (float distance, float scale, float fade)
+float FadedShadowStrength (float distance, float scale, float fade)
 {
     return saturate((1.0 - distance*scale)*fade);
 }
@@ -59,7 +59,7 @@ ShadowData GetShadowData(Surface surfaceWS)
 {
 	ShadowData data;
 	data.cascadeBlend = 1.0;
-	data.strength = FadeShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);//surfaceWS.depth < _ShadowDistance ? 1.0: 0.0;
+	data.strength = FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);//surfaceWS.depth < _ShadowDistance ? 1.0: 0.0;
 	int i;
 	//如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联索引
 	for (i=0; i< _CascadeCount; i++)
@@ -68,12 +68,13 @@ ShadowData GetShadowData(Surface surfaceWS)
 		float distaceSqr = DistanceSquared(surfaceWS.position, sphere.xyz);
 		if (distaceSqr < sphere.w)
 		{
-			float fade = FadeShadowStrength(distaceSqr, _CascadeData[i].x, _ShadowDistanceFade.z);
+			//计算级联阴影的过渡强度，叠加到阴影强度上作为最终阴影强度
+			float fade = FadedShadowStrength(distaceSqr, _CascadeData[i].x, _ShadowDistanceFade.z);
             //如果是最后一个集联，进行阴影过渡
             if (i == _CascadeCount-1)
             {
 
-                data.strength = fade;
+                data.strength *= fade;
             } else
 			{
 				data.cascadeBlend = fade;
@@ -87,6 +88,15 @@ ShadowData GetShadowData(Surface surfaceWS)
 	{
 		data.strength = 0.0;
 	}
+
+#if defined(_CASCADE_BLEND_DITHER)
+	else if (data.cascadeBlend < surfaceWS.dither) {
+		i += 1;
+	}
+#endif
+#if !defined(_CASCADE_BLEND_SOFT)
+	data.cascadeBlend = 1.0;
+#endif
 
 	data.cascadeIndex = i;
 	return data;

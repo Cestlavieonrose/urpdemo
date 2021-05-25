@@ -14,6 +14,8 @@ struct Surface
     float3 viewDirection;
     //表面深度
     float depth;
+    //阴影抖动属性
+    float dither;
 };
 
 #endif
