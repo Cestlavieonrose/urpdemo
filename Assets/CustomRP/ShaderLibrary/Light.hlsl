@@ -32,6 +32,8 @@ DirectionalShadowData GetDirectionalShadowData(int lightIndex, ShadowData shadow
 	DirectionalShadowData data;
 	data.strength = _DirectionalLightShadowData[lightIndex].x * shadowData.strength;
 	data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
+	//获取灯光的法线偏差值
+	data.normalBias = _DirectionalLightShadowData[lightIndex].z;
 	return data;
 }
 

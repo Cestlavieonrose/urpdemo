@@ -74,6 +74,8 @@ struct DirectionalShadowData
 {
 	float strength;
 	int tileIndex;
+	//法线偏差
+	float normalBias;
 };
 
 //采样阴影图集
@@ -88,7 +90,7 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowD
 		return 1.0;
 	}
     //计算法线偏差
-    float3 normalBias = surfaceWS.normal * _CascadeData[global.cascadeIndex].y;
+    float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
 	//通过阴影转换矩阵和表面位置得到在阴影纹理(图块)空间的位置，然后对图集进行采样 
 	float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position+normalBias, 1.0)).xyz;
 	float shadow = SampleDirectionalShadowAtlas(positionSTS);

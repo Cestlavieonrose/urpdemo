@@ -25,6 +25,8 @@ public class Shadows
     struct ShadowedDirectionalLight
     {
         public int visibleLightIndex;
+        //斜度比例偏差值
+        public float slopeScaleBias;
     }
     //存储可投射阴影的定向光源的数据
     ShadowedDirectionalLight[] ShadowedDirectionalLights = new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];
@@ -72,9 +74,10 @@ public class Shadows
         {
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] = new ShadowedDirectionalLight
             {
-                visibleLightIndex = visibleLightIndex
+                visibleLightIndex = visibleLightIndex,
+                slopeScaleBias = light.shadowBias
             };
-            return new Vector2(light.shadowStrength, shadowSetting.directional.cascadeCount * ShadowedDirectionalLightCount++);
+            return new Vector3(light.shadowStrength, shadowSetting.directional.cascadeCount * ShadowedDirectionalLightCount++, light.shadowNormalBias);
         }
         return Vector2.zero;
     }
@@ -165,12 +168,13 @@ public class Shadows
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
 
             //设置深度偏差
-          //  buffer.SetGlobalDepthBias(0f, 3f);
-
+            //  buffer.SetGlobalDepthBias(0f, 3f);
+            //设置斜度比例偏差值
+            buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
             ExecuteBuffer();
             //只渲染"LightMode" = "ShadowCaster"的通道
             context.DrawShadows(ref settings);
-           // buffer.SetGlobalDepthBias(0f, 0f);
+            buffer.SetGlobalDepthBias(0f, 0f);
         }
     }
 

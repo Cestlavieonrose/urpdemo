@@ -16,12 +16,12 @@ MonoBehaviour:
   useGPUInstancing: 1
   useSRPBatcher: 1
   shadows:
-    MaxDistance: 20.69
-    distanceFade: 0.298
+    MaxDistance: 100
+    distanceFade: 0.001
     directional:
       atlasSize: 1024
       cascadeCount: 4
       cascadeRatio1: 0.3
       cascadeRatio2: 0.4
       cascadeRatio3: 0.5
-      cascadeFade: 0.441
+      cascadeFade: 0.408
