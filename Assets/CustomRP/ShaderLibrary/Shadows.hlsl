@@ -44,6 +44,8 @@ struct ShadowData
 	int cascadeIndex;
 	//是否采样阴影的标识
 	float strength;
+	//混合级联
+	float cascadeBlend;
 };
 
 //公式计算阴影过渡强度
@@ -56,6 +58,7 @@ float FadeShadowStrength (float distance, float scale, float fade)
 ShadowData GetShadowData(Surface surfaceWS)
 {
 	ShadowData data;
+	data.cascadeBlend = 1.0;
 	data.strength = FadeShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);//surfaceWS.depth < _ShadowDistance ? 1.0: 0.0;
 	int i;
 	//如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联索引
@@ -65,11 +68,16 @@ ShadowData GetShadowData(Surface surfaceWS)
 		float distaceSqr = DistanceSquared(surfaceWS.position, sphere.xyz);
 		if (distaceSqr < sphere.w)
 		{
+			float fade = FadeShadowStrength(distaceSqr, _CascadeData[i].x, _ShadowDistanceFade.z);
             //如果是最后一个集联，进行阴影过渡
             if (i == _CascadeCount-1)
             {
-                data.strength = FadeShadowStrength(distaceSqr, _CascadeData[i].x, _ShadowDistanceFade.z);
-            }
+
+                data.strength = fade;
+            } else
+			{
+				data.cascadeBlend = fade;
+			}
 			break;
 		}
 	}
@@ -132,7 +140,12 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowD
 	//通过阴影转换矩阵和表面位置得到在阴影纹理(图块)空间的位置，然后对图集进行采样 
 	float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex], float4(surfaceWS.position+normalBias, 1.0)).xyz;
 	float shadow = FilterDirectionalShadow(positionSTS);
-	
+	//如果级联混合小于1代表在级联层级过渡区域中，必须从下一个级联中采样并在两个值之间进行插值
+	if (global.cascadeBlend < 1.0) {
+		normalBias = surfaceWS.normal *(directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
+		positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],float4(surfaceWS.position + normalBias, 1.0)).xyz;
+		shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend);
+	}
 
 	//最终衰减结果是阴影强度和采样衰减的线性差值
 	return lerp(1.0, shadow, directional.strength);
