@@ -170,7 +170,7 @@ public class Shadows
         int cascadeCount = shadowSetting.directional.cascadeCount;
         int tileOffset = index * cascadeCount;
         Vector3 ratios = shadowSetting.directional.CascadeRatios;
-
+        float cullingFactor = Mathf.Max(0f, 0.8f - shadowSetting.directional.cascadeFade);
         for (int i = 0; i < cascadeCount; i++)
         {
             cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex,
@@ -182,6 +182,8 @@ public class Shadows
                 Vector4 cullingSpheres = splitData.cullingSphere;
                 SetCascadeData(i, cullingSpheres, tileSize);      
             }
+            //剔除被小的级联所包含的渲染实体，防止多个级联之间重复渲染
+            splitData.shadowCascadeBlendCullingFactor = cullingFactor;
             settings.splitData = splitData;
             //调整图块索引，它等于光源的图块偏移加上级联的索引
             int tileIndex = tileOffset + i;
