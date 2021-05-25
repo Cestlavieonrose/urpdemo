@@ -27,6 +27,8 @@ public class Shadows
         public int visibleLightIndex;
         //斜度比例偏差值
         public float slopeScaleBias;
+        //阴影视锥体进裁剪平面偏移
+        public float nearPlaneOffset;
     }
     //存储可投射阴影的定向光源的数据
     ShadowedDirectionalLight[] ShadowedDirectionalLights = new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];
@@ -75,8 +77,10 @@ public class Shadows
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] = new ShadowedDirectionalLight
             {
                 visibleLightIndex = visibleLightIndex,
-                slopeScaleBias = light.shadowBias
+                slopeScaleBias = light.shadowBias,
+                nearPlaneOffset = light.shadowNearPlane
             };
+            Debug.Log("light.shadowNearPlane:" + light.shadowNearPlane);
             return new Vector3(light.shadowStrength, shadowSetting.directional.cascadeCount * ShadowedDirectionalLightCount++, light.shadowNormalBias);
         }
         return Vector3.zero;
@@ -154,7 +158,7 @@ public class Shadows
         for (int i = 0; i < cascadeCount; i++)
         {
             cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(light.visibleLightIndex,
-                i, cascadeCount, ratios, tileSize, 0f, out Matrix4x4 viewMatrix,
+                i, cascadeCount, ratios, tileSize, light.nearPlaneOffset, out Matrix4x4 viewMatrix,
             out Matrix4x4 projectionMatrix, out ShadowSplitData splitData);
             //得到第一个光源的包围球数据
             if (index == 0)
