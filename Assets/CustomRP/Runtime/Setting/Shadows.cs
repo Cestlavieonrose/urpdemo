@@ -44,6 +44,8 @@ public class Shadows
 
     static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
 
+    static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
+
 
     static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
 
@@ -80,7 +82,6 @@ public class Shadows
                 slopeScaleBias = light.shadowBias,
                 nearPlaneOffset = light.shadowNearPlane
             };
-            Debug.Log("light.shadowNearPlane:" + light.shadowNearPlane);
             return new Vector3(light.shadowStrength, shadowSetting.directional.cascadeCount * ShadowedDirectionalLightCount++, light.shadowNormalBias);
         }
         return Vector3.zero;
@@ -98,14 +99,18 @@ public class Shadows
     static int cascadeDataId = Shader.PropertyToID("_CascadeData");
     static Vector4[] cascadeData = new Vector4[maxCascades];
 
-    void SetCascadeData(int index, Vector4 cullingSpheres, float tileSize)
+    void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
     {
-        //包围球直径除以阴影图块尺寸=纹素大小
-        float texelSize = 2f * cullingSpheres.w/tileSize;
-        cullingSpheres.w *= cullingSpheres.w;
-        cascadeCullingSpheres[index] = cullingSpheres;
-
-        cascadeData[index] = new Vector4(1f/cullingSpheres.w, texelSize*1.4142136f);
+        //包围球半径除以阴影图块大小=近似纹素大小
+        float texelSize = 2f * cullingSphere.w / tileSize;
+        
+        float filterSize = texelSize * ((float)shadowSetting.directional.filter + 1f);
+        //防止PCF算法后出现的阴影瑕疵
+        cullingSphere.w -= filterSize;
+        //得到半径的平方值
+        cullingSphere.w *= cullingSphere.w;
+        cascadeCullingSpheres[index] = cullingSphere;
+        cascadeData[index] = new Vector4(1f / cullingSphere.w, filterSize * 1.4142136f);
     }
 
     //渲染定向光阴影
@@ -139,8 +144,12 @@ public class Shadows
         //阴影过渡距离发送到GPU
         float f = 1f - shadowSetting.directional.cascadeFade;
         buffer.SetGlobalVector(shadowDistanceFadeId, new Vector4(1f/shadowSetting.MaxDistance, 
-        1f/shadowSetting.distanceFade,
-        1f/(1f-f*f)));
+                                    1f/shadowSetting.distanceFade,
+                                    1f/(1f-f*f)));
+        //设置PCF shader宏
+        SetKeywords();
+        //传递图集大小和文素大小
+        buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
@@ -227,5 +236,29 @@ public class Shadows
         m.m23 = 0.5f * (m.m23 + m.m33);
         return m;
 
+    }
+
+    //PCF滤波模式
+    static string[] directionalFilterKeywords =
+    {
+        "_DIRECTIONAL_PCF3",
+        "_DIRECTIONAL_PCF5",
+        "_DIRECTIONAL_PCF7",
+    };
+
+    //设置关键字开启哪种PCF滤波模式
+    void SetKeywords()
+    {
+        int enabledIndex = (int)shadowSetting.directional.filter - 1;
+        for (int i = 0; i < directionalFilterKeywords.Length; i++)
+        {
+            if (i == enabledIndex)
+            {
+                buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
+            } else
+            {
+                buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+            }
+        }
     }
 }

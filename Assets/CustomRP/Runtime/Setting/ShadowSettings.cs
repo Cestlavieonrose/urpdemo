@@ -25,6 +25,7 @@ public class ShadowSettings
     public struct Directional
     {
         public TextureSize atlasSize;
+        public FilterMode filter;
         //级联数量
         [Range(1, 4)]
         public int cascadeCount;
@@ -38,17 +39,32 @@ public class ShadowSettings
         public float cascadeFade;
     }
 
+    //PCF滤波模式
+    public enum FilterMode
+    {
+        PCF2x2,
+        PCF3x3,
+        PCF5x5,
+        PCF7x7,
+    }
+
+
+
     //默认尺寸为1024
     public Directional directional = new Directional
     {
+
         atlasSize = TextureSize._1024,
+        filter = FilterMode.PCF2x2,
         cascadeCount = 4,
         cascadeRatio1 = 0.1f,
         cascadeRatio2 = 0.25f,
         cascadeRatio3 = 0.5f,
         cascadeFade = 0.1f
         
-    };    
+    };   
+    
+
 
     
 }

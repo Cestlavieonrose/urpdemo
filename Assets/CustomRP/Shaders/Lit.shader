@@ -40,6 +40,8 @@
            //使用shader feature 声明一个toggle开关对应的_CLIpping关键字
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
+            //_代表默认 _DIRECTIONAL_PCF2
+            #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
             #pragma multi_compile_instancing
 
 
