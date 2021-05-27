@@ -1,0 +1,31 @@
+[33mab4a9a4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: reset: moving to ab4a9a4
+[33mab4a9a4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{1}: checkout: moving from a17e2217e8daf00634f49017be1bed2f06cc0f14 to main
+[33ma17e221[m HEAD@{2}: reset: moving to a17e221
+[33m20df496[m HEAD@{3}: commit: 剔除偏差
+[33m4aed9e9[m HEAD@{4}: commit: 级联过渡抖动
+[33m70c152a[m HEAD@{5}: commit: 级联混合 让横跨两个级联的阴影过渡更柔和
+[33m19d9abb[m HEAD@{6}: commit: PCF算法加入
+[33m7d00a9e[m HEAD@{7}: commit: 阴影平坠
+[33mb45412d[m HEAD@{8}: commit: 阴影镂空问题解决
+[33ma35339d[m HEAD@{9}: commit: 修正阴影级联过渡出现问题的bug
+[33mab4a9a4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{10}: reset: moving to ab4a9a4
+[33mdd1f703[m HEAD@{11}: checkout: moving from ab4a9a44cdf60fe624b91e49a51af13c606247a1 to dd1f7031b5d127aa7254848506676b86f1395aa0
+[33mab4a9a4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{12}: reset: moving to ab4a9a4
+[33ma17e221[m HEAD@{13}: checkout: moving from main to a17e2217e8daf00634f49017be1bed2f06cc0f14
+[33mab4a9a4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{14}: reset: moving to HEAD
+[33mab4a9a4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{15}: commit: 根据灯光组件的Bias进行调整阴影
+[33m1d863fc[m HEAD@{16}: pull origin main: Fast-forward
+[33meddd189[m HEAD@{17}: reset: moving to eddd189
+[33mfe16a74[m HEAD@{18}: checkout: moving from eddd189bf304d8f56c4c11ddd4131bc50025e11f to main
+[33meddd189[m HEAD@{19}: checkout: moving from main to eddd189
+[33mfe16a74[m HEAD@{20}: checkout: moving from eddd189bf304d8f56c4c11ddd4131bc50025e11f to main
+[33meddd189[m HEAD@{21}: commit: 阴影 级联 球形包围 最大距离横截
+[33m2336536[m HEAD@{22}: commit: 级联阴影设置
+[33m9378328[m HEAD@{23}: checkout: moving from main to origin/HEAD
+[33mfe16a74[m HEAD@{24}: commit: dBRDF 完成度 70%
+[33ma47676e[m HEAD@{25}: commit: BRDF 完成度 70%
+[33mc9eebf8[m HEAD@{26}: commit: 多光源方向光
+[33mf94e9cd[m HEAD@{27}: commit: 方向光- 漫反射实现
+[33m7f9f655[m HEAD@{28}: commit: 初始化工程
+[33mafcd976[m HEAD@{29}: commit: 初始化工程
+[33mfaf375d[m HEAD@{30}: clone: from https://github.com/Cestlavieonrose/urpdemo.git

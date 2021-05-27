@@ -7,6 +7,10 @@
         //透明度测试的阈值
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         [Toggle(_CLIPPING)] _Clipping("Alpha Clipping", Float) = 0
+        //阴影模式
+	    [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+        //是否接受阴影
+	    [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
         [Toggle(_PREMULTIPLY_ALPHA)] _PremultiplyAlpha("Premultiply Alpha", Float) = 0
         
         //金属度和光滑度
@@ -17,7 +21,6 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
         //默认写入深度缓冲区
         [Enum(Off, 0, On, 1)] _ZWrite("Z Write", Float) = 1
-      
     }
 
 
@@ -38,7 +41,9 @@
         HLSLPROGRAM
             #pragma target 3.5
            //使用shader feature 声明一个toggle开关对应的_CLIpping关键字
-            #pragma shader_feature _CLIPPING
+            //#pragma shader_feature _CLIPPING
+            #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
+            #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _PREMULTIPLY_ALPHA
             //_代表默认 _DIRECTIONAL_PCF2
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7

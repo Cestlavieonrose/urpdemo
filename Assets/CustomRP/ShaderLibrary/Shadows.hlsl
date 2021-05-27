@@ -141,7 +141,10 @@ float FilterDirectionalShadow(float3 positionSTS) {
 
 //得到级联阴影强度
 float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowData global, Surface surfaceWS) {
-
+	//如果材质没有定义接受阴影的宏
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#endif
 	if (directional.strength <= 0.0) {
 		return 1.0;
 	}

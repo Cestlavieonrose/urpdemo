@@ -65,10 +65,16 @@ void ShadowCasterPassFragment(Varyings input)
 
     //访问获取材质的颜色属性
     float4 c = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor)*baseMap;
-#if defined(_CLIPPING)
-    //透明度低于阈值的偏远进行舍弃
-    clip(c.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+
+#if defined(_SHADOWS_CLIP)
+	//透明度低于阈值的片元进行舍弃
+	clip(c.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+#elif defined(_SHADOWS_DITHER)
+	//计算抖动值
+	float dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+	clip(c.a - dither);
 #endif
+
 }
 
 #endif

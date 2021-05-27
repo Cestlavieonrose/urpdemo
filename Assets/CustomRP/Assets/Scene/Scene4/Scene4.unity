@@ -429,8 +429,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61c5d203b70ec6245bd21404870fb826, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseColor: {r: 0.9339623, g: 0.14538093, b: 0.14538093, a: 1}
-  cutoff: 0.5
+  baseColor: {r: 0.9339623, g: 0.14538093, b: 0.14538093, a: 0.6313726}
+  cutoff: 0.14
   metallic: 0
   smoothness: 0.5
 --- !u!1 &1249118151
@@ -620,8 +620,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1625817024}
-  m_LocalRotation: {x: -0.20809361, y: -0.64225674, z: 0.18736637, w: -0.7135105}
-  m_LocalPosition: {x: -2.1574383, y: 1.6843141, z: -2.7932973}
+  m_LocalRotation: {x: -0.15076362, y: -0.37591684, z: 0.062170744, w: -0.9121906}
+  m_LocalPosition: {x: -2.3088243, y: 2.2521026, z: -4.8455596}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
