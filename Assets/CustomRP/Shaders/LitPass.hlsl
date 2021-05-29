@@ -6,6 +6,7 @@
 #include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
+#include "../ShaderLibrary/GI.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
 //定义一张2D纹理，并使用SAMPLER(sampler+纹理名) 这个宏为该纹理指定一个采样器
@@ -31,6 +32,7 @@ struct Attributes
 	float2 baseUV : TEXCOORD0;
 	//表面法线
 	float3 normalOS : NORMAL;
+	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -42,6 +44,7 @@ struct Varyings
     float2 baseUV:VAR_BASE_UV;
     //世界法线
     float3 normalWS:VAR_NORMAL;
+	GI_VARYINGSDATA
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -54,6 +57,7 @@ Varyings LitPassVertex(Attributes input)
 	UNITY_SETUP_INSTANCE_ID(input);
     //将对象位置和索引输出 若Varyings定义了UNITY_VERTEX_INPUT_INSTANCE_ID，则进行复制
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
+	TRANSFER_GI_DATA(input, output);
 	output.positionWS = TransformObjectToWorld(input.positionOS);
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	//计算世界空间的法线
@@ -68,6 +72,7 @@ Varyings LitPassVertex(Attributes input)
 float4 LitPassFragment(Varyings input):SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
+
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
 	// 通过UNITY_ACCESS_INSTANCED_PROP访问material属性
 	float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
@@ -102,8 +107,9 @@ float4 LitPassFragment(Varyings input):SV_TARGET
 
 	
 	
-
-	float3 color = GetLighting(surface, brdf);
+	//获取全局照明数据
+	GI gi = GetGI(GI_FRAGMENT_DATA(input));
+	float3 color = GetLighting(surface, brdf, gi);
 	return float4(color, surface.alpha);
 }
 
