@@ -6,6 +6,10 @@
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
 
+TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
+SAMPLER(samplerunity_ProbeVolumeSH);
+
+
 //采样光照贴图
 float3 SamplerLightMap(float2 lightmapUV)
 {
@@ -30,17 +34,34 @@ float3 SamplerLightMap(float2 lightmapUV)
 float3 SampleLightProbe(Surface surfaceWS)
 {
 #if defined(LIGHTMAP_ON)
-	return 0.0
+	return 0.0;
 #else
-	float4 coefficients[7];
-	coefficients[0] = unity_SHAr;
-	coefficients[1] = unity_SHAg;
-	coefficients[2] = unity_SHAb;
-	coefficients[3] = unity_SHBr;
-	coefficients[4] = unity_SHBg;
-	coefficients[5] = unity_SHBb;
-	coefficients[6] = unity_SHC;
-	return max(0.0, SampleSH9(coefficients), surfaceWS.normal);
+	//判断是否使用LPPV或插值光照探针
+	if (unity_ProbeVolumeParams.x)
+	{
+		return SampleProbeVolumeSH4(
+			TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+			surfaceWS.position,
+			surfaceWS.normal,
+			unity_ProbeVolumeWorldToObject,
+			unity_ProbeVolumeParams.y,
+			unity_ProbeVolumeParams.z,
+			unity_ProbeVolumeMin.xyz,
+			unity_ProbeVolumeSizeInv.xyz
+		);
+	} else
+	{
+		float4 coefficients[7];
+		coefficients[0] = unity_SHAr;
+		coefficients[1] = unity_SHAg;
+		coefficients[2] = unity_SHAb;
+		coefficients[3] = unity_SHBr;
+		coefficients[4] = unity_SHBg;
+		coefficients[5] = unity_SHBb;
+		coefficients[6] = unity_SHC;
+		return max(0.0, SampleSH9(coefficients, surfaceWS.normal));
+	}
+	
 #endif
 
 }

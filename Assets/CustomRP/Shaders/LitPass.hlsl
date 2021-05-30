@@ -105,8 +105,6 @@ float4 LitPassFragment(Varyings input):SV_TARGET
 	BRDF brdf = GetBRDF(surface);
 #endif
 
-	
-	
 	//获取全局照明数据
 	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
 	float3 color = GetLighting(surface, brdf, gi);
