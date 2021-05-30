@@ -2,24 +2,6 @@
 #ifndef CUSTOM_UNLIT_PASS_INCLUDED
 #define CUSTOM_UNLIT_PASS_INCLUDED
 
-//允许多次include同个文件
-#include "../ShaderLibrary/Common.hlsl"
-//并不是所有版本的opengl（比方说opengl es 2.0）都支持cbuffer 所有需要在宏里定义
-// CBUFFER_START(UnityPerMaterial)
-//         float4 _BaseColor;
-// CBUFFER_END
-//
-//定义一张2D纹理，并使用SAMPLER(sampler+纹理名) 这个宏为该纹理指定一个采样器
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-//提供纹理的缩放和平移
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
-
 //用作顶点函数的输入参数
 struct Attributes
 {
@@ -49,8 +31,7 @@ Varyings UnlitPassVertex(Attributes input)
     outputs.positionCS = positionVP;
 
     //计算缩放和偏移后的UV坐标
-    float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
-    outputs.baseUV = input.baseUV*baseST.xy + baseST.zw;
+	outputs.baseUV = TransformBaseUV(input.baseUV);
     return outputs;
 }
 
@@ -58,13 +39,11 @@ Varyings UnlitPassVertex(Attributes input)
 float4 UnlitPassFragment(Varyings input):SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
 
-    //访问获取材质的颜色属性
-    float4 c = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor)*baseMap;
+    float4 c = GetBase(input.baseUV);
 #if defined(_CLIPPING)
-    //透明度低于阈值的偏远进行舍弃
-    clip(c.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+    //透明度低于阈值的片元进行舍弃
+	clip(c.a - GetCutoff(input.baseUV));
 #endif
     return c;
 }

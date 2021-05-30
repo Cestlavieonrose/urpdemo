@@ -1,20 +1,5 @@
 ﻿#ifndef CUSTOM_ShadowCasterPass_PASS_INCLUDED
 #define CUSTOM_ShadowCasterPass_PASS_INCLUDED
-//允许多次include同个文件
-#include "../ShaderLibrary/Common.hlsl"
-
-//定义一张2D纹理，并使用SAMPLER(sampler+纹理名) 这个宏为该纹理指定一个采样器
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
-
-//支持instancing的cbuff
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-//提供纹理的缩放和平移
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
 
 //用作顶点函数的输入参数
 struct Attributes
@@ -52,8 +37,7 @@ Varyings ShadowCasterPassVertex(Attributes input)
     #endif
 
     //计算缩放和偏移后的UV坐标
-    float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
-    outputs.baseUV = input.baseUV*baseST.xy + baseST.zw;
+    outputs.baseUV = TransformBaseUV(input.baseUV);
     return outputs;
 }
 
@@ -61,14 +45,10 @@ Varyings ShadowCasterPassVertex(Attributes input)
 void ShadowCasterPassFragment(Varyings input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-
-    //访问获取材质的颜色属性
-    float4 c = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor)*baseMap;
-
+    float4 c = GetBase(input.baseUV);
 #if defined(_SHADOWS_CLIP)
 	//透明度低于阈值的片元进行舍弃
-	clip(c.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+    clip(c.a - GetCutoff(input.baseUV));
 #elif defined(_SHADOWS_DITHER)
 	//计算抖动值
 	float dither = InterleavedGradientNoise(input.positionCS.xy, 0);

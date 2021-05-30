@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Sphere1
+  m_Name: Sphere3
   m_Shader: {fileID: 4800000, guid: aba3d43f0a932df47a04ea1956f68506, type: 3}
   m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_ON
   m_LightmapFlags: 0
