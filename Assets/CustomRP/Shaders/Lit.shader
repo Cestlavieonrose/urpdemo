@@ -21,6 +21,9 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
         //默认写入深度缓冲区
         [Enum(Off, 0, On, 1)] _ZWrite("Z Write", Float) = 1
+        //自发光
+        [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
+        [HDR] _EmissionColor("Emission", Color) = (0.0,0.0,0.0,0.0)
     }
 
 

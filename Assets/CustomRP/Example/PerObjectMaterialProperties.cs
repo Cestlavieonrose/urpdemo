@@ -22,6 +22,10 @@ public class PerObjectMaterialProperties : MonoBehaviour
     float smoothness = 0.5f;
 
     static MaterialPropertyBlock block;
+    static int emissionColorId = Shader.PropertyToID("_EmissionColor");
+
+    [SerializeField, ColorUsage(false, true)]
+    Color emissionColor = Color.black;
 
     private void OnValidate()
     {
@@ -35,6 +39,7 @@ public class PerObjectMaterialProperties : MonoBehaviour
 
         block.SetFloat(metallicId, metallic);
         block.SetFloat(smoothnessId, smoothness);
+        block.SetColor(emissionColorId, emissionColor);
         GetComponent<Renderer>().SetPropertyBlock(block);
     }
 

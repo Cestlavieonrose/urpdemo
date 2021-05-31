@@ -54,5 +54,4 @@ float4 MetaPassFragment(Varyings input) : SV_TARGET{
 	// }
 	return meta;
 }
-
 #endif
