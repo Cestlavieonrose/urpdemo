@@ -3,11 +3,24 @@
 #define CUSTOM_GI_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl"
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
 
 TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
 SAMPLER(samplerunity_ProbeVolumeSH);
+
+TEXTURECUBE(unity_SpecCube0);
+SAMPLER(samplerunity_SpecCube0);
+
+//采样立方体纹理
+float3 SampleEnvironment(Surface surfaceWS, BRDF brdf)
+{
+	float3 uvw = reflect(-surfaceWS.viewDirection, surfaceWS.normal);
+	float mip = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
+	float4 environment = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip);
+	return environment.rgb;
+}
 
 
 //采样光照贴图
@@ -70,14 +83,20 @@ float3 SampleLightProbe(Surface surfaceWS)
 struct GI {
     //漫反射
 	float3 diffuse;
+	//镜面反射颜色
+	float3 specular;
 };
 
-GI GetGI(float2 lightmapUV, Surface surfaceWS)
+GI GetGI(float2 lightmapUV, Surface surfaceWS, BRDF brdf)
 {
 	GI gi;
 	gi.diffuse = SamplerLightMap(lightmapUV) + SampleLightProbe(surfaceWS);
+	gi.specular = SampleEnvironment(surfaceWS, brdf);
 	return gi;
 }
+
+
+
 
 //当需要渲染光照贴图的对象时
 #if defined(LIGHTMAP_ON)
