@@ -13,6 +13,9 @@ float4 unity_LODFade;
 real4 unity_WorldTransformParams;
 float4 unity_LightmapST;
 float4 unity_DynamicLightmapST;
+
+float4 unity_ProbesOcclusion;
+float4 unity_SpecCube0_HDR;
 CBUFFER_END
 
 //定义一个从世界空间转换到裁剪空间的矩阵
