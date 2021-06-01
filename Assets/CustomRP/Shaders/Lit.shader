@@ -24,6 +24,10 @@
         //自发光
         [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
         [HDR] _EmissionColor("Emission", Color) = (0.0,0.0,0.0,0.0)
+
+        [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
+        [HideInInspector] _Color("Color for Lightmap", Color) = (0.5,0.5,0.5,1.0)
+        
     }
 
 
@@ -57,6 +61,7 @@
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile_instancing
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
 
 
             #pragma vertex LitPassVertex

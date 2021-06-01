@@ -7,6 +7,7 @@ CBUFFER_START(UnityPerDraw)
 //定义一个从模型空间转换到世界空间的转换矩阵
 float4x4 unity_ObjectToWorld;
 float4x4 unity_WorldToObject;
+//x分量是过渡因子 Y:相同的因子 被量化为16步
 float4 unity_LODFade;
 //这个矩阵包含一些在这里我们不需要转换信息
 real4 unity_WorldTransformParams;

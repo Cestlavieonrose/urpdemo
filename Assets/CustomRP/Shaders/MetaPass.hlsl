@@ -48,10 +48,10 @@ float4 MetaPassFragment(Varyings input) : SV_TARGET{
 		meta.rgb += brdf.specular * brdf.roughness * 0.5;
 		meta.rgb = min(PositivePow(meta.rgb, unity_OneOverOutputBoost), unity_MaxOutputValue);
 	}
-    // //若标记了Y分量，则返回自发光的颜色
-	// else if (unity_MetaFragmentControl.y) {
-	// 	meta = float4(GetEmission(input.baseUV), 1.0);
-	// }
+    //若标记了Y分量，则返回自发光的颜色
+	else if (unity_MetaFragmentControl.y) {
+		meta = float4(GetEmission(input.baseUV), 1.0);
+	}
 	return meta;
 }
 #endif
