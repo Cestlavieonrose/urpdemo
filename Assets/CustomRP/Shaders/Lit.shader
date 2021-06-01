@@ -27,7 +27,8 @@
 
         [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
         [HideInInspector] _Color("Color for Lightmap", Color) = (0.5,0.5,0.5,1.0)
-        
+        //菲涅尔反射强度
+        _Fresnel("Fresnel", Range(0, 1)) = 1
     }
 
 
