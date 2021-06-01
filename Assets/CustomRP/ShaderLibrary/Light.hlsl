@@ -3,6 +3,8 @@
 #define CUSTOM_LIGHT_INCLUDED
 
 #define MAX_DIRECTIONAL_LIGHT_COUNT 4
+#define MAX_OTHER_LIGHT_COUNT 64
+
 CBUFFER_START(_CustomLight)
 	int _DirectionalLightCount;
 	//定向光源颜色、方向、阴影等数据
@@ -10,7 +12,17 @@ CBUFFER_START(_CustomLight)
     float4 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];
 	//阴影数据
 	float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
+
+	//非定向光源属性
+	int _OtherLightCount;
+	float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];
+	float4 _OtherLightPosition[MAX_OTHER_LIGHT_COUNT];
 CBUFFER_END
+
+int GetOtherLightCount()
+{
+	return _OtherLightCount;
+}
 
 //灯光的属性
 struct Light {
@@ -50,6 +62,20 @@ Light GetDirectionalLight (int index,Surface surfaceWS, ShadowData shadowData) {
 	return light;
 }
 
+//获取指定索引的非定向光源数据
+Light GetOtherLight(int index, Surface surfaceWS, ShadowData shadowData)
+{
+	Light light;
+	light.color = _OtherLightColors[index];
+	float3 ray = _OtherLightPosition[index].xyz - surfaceWS.position;
+	light.direction = normalize(ray);
+	//光照强度随距离衰减
+	float distanceSqr = max(dot(ray, ray), 0.00001);
+	//到一定距离后就衰减为0
+	float rangeAtten = Square(saturate(1.0-Square(distanceSqr*_OtherLightPosition[index].w)));
+	light.attenuation = rangeAtten/distanceSqr;
+	return light;
+}
 
 
 #endif

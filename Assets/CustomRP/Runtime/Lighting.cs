@@ -7,6 +7,15 @@ using UnityEngine.Rendering;
 //灯光管理类
 public class Lighting
 {
+    //定义其他类型光源的数量
+    const int maxOtherLightCount = 64;
+    static int otherLightCountId = Shader.PropertyToID("_OtherLightCount");
+    static int otherLightColorsId = Shader.PropertyToID("_OtherLightColors");
+    static int otherLightPositionsId = Shader.PropertyToID("_OtherLightPosition");
+    //存储其他类型光源的颜色和位置数据
+    static Vector4[] otherLightColors = new Vector4[maxOtherLightCount];
+    static Vector4[] otherLightPositions = new Vector4[maxOtherLightCount];
+
     const string bufferName = "Lighting";
     CommandBuffer buffer = new CommandBuffer
     { 
@@ -57,33 +66,58 @@ public class Lighting
     //将场景主光源的光照颜色和方向传递到GPU
     void SetupLights()
     {
-
         //Light light = RenderSettings.sun;
         //灯光的颜色我们在乘上光强作为最终颜色
         //buffer.SetGlobalVector(dirLightColorId, light.color.linear * light.intensity);
         //buffer.SetGlobalVector(dirLightDirectionId, -light.transform.forward);
         //见到的所有可见光
         NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
-        int dirLightCount = 0;
+        int dirLightCount = 0, otherLightCount = 0;
         for (int i = 0; i < visibleLights.Length; i++)
         {
             VisibleLight visibleLight = visibleLights[i];
-            //如果是方向光 我们才进行数据存储
-            if (visibleLight.lightType == LightType.Directional)
+            switch(visibleLight.lightType)
             {
-                //VisibleLight结构很大，我们改为传递引用不是传递值，这样不生成副本
-                SetupDirectionalLight(dirLightCount++, ref visibleLight);
-                if (dirLightCount >= maxDirLightCount)
-                {
+                case LightType.Directional:
+                    if (dirLightCount < maxDirLightCount)
+                    {
+                        //VisibleLight结构很大，我们改为传递引用不是传递值，这样不生成副本
+                        SetupDirectionalLight(dirLightCount++, ref visibleLight);
+                    }
                     break;
-                }
+                case LightType.Point:
+                    if (otherLightCount < maxOtherLightCount)
+                    {
+                        SetupPointLight(otherLightCount++, ref visibleLight);
+                    }
+                    break;
             }
+            
         }
 
         buffer.SetGlobalInt(dirLightCountId, dirLightCount);
-        buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
-        buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
-        buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
+        if (dirLightCount>0)
+        {
+            buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
+            buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+            buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
+        }
+
+        buffer.SetGlobalInt(otherLightCountId, otherLightCount);
+        if (otherLightCount>0)
+        {
+            buffer.SetGlobalVectorArray(otherLightColorsId, otherLightColors);
+            buffer.SetGlobalVectorArray(otherLightPositionsId, otherLightPositions);
+        }
+        
+    }
+
+    void SetupPointLight(int index, ref VisibleLight light)
+    {
+        otherLightColors[index] = light.finalColor;
+        Vector4 position = light.localToWorldMatrix.GetColumn(3);
+        position.w = 1.0f/Mathf.Max(light.range*light.range, 0.00001f);
+        otherLightPositions[index] = position;
     }
 
     //释放阴影贴图
