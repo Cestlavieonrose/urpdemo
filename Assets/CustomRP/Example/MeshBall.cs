@@ -35,14 +35,14 @@ public class MeshBall : MonoBehaviour
 
     void Awake()
     {
-        for (int i = 0; i < matrices.Length; i++)
+        for (int i=0;i<matrices.Length;i++)
         {
             //创建随机转换矩阵和颜色
-            matrices[i] = Matrix4x4.TRS(Random.insideUnitSphere * 10f, Quaternion.Euler(
+            matrices[i] = Matrix4x4.TRS(Random.insideUnitSphere*10f, Quaternion.Euler(
                     Random.value * 360f, Random.value * 360f, Random.value * 360f
                 ),
                 Vector3.one * Random.Range(0.5f, 1.5f));
-            baseColors[i] = new Vector4(Random.value, Random.value, Random.value, Random.Range(0.5f, 1f));
+            baseColors[i] = new Vector4(Random.value,Random.value,Random.value,Random.Range(0.5f, 1f));
             //金属度和光滑度按条件随机
             metallic[i] = Random.value < 0.25f ? 1f : 0f;
             smoothness[i] = Random.Range(0.05f, 0.95f);
@@ -67,14 +67,16 @@ public class MeshBall : MonoBehaviour
                     positions[i] = matrices[i].GetColumn(3);
                 }
                 var lightProbes = new SphericalHarmonicsL2[1023];
-                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions, lightProbes, null);
+                var occlusionProbes = new Vector4[1023];
+                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions, lightProbes, occlusionProbes);
                 block.CopySHCoefficientArraysFrom(lightProbes);
+                block.CopyProbeOcclusionArrayFrom(occlusionProbes);
             }
-
+           
 
             block.SetFloat(cutoffId, cutoff);
-        }
+        }   
         //绘制网格实例
-        Graphics.DrawMeshInstanced(mesh, 0, material, matrices, 1023, block, ShadowCastingMode.On, true, 0, null, lightProbeVolume ? LightProbeUsage.UseProxyVolume : LightProbeUsage.CustomProvided, lightProbeVolume);
+        Graphics.DrawMeshInstanced(mesh,0,material,matrices,1023,block, ShadowCastingMode.On, true, 0, null, lightProbeVolume ? LightProbeUsage.UseProxyVolume : LightProbeUsage.CustomProvided,lightProbeVolume);
     }
 }

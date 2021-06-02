@@ -10,8 +10,7 @@
 struct Attributes {
 	float3 positionOS : POSITION;
 	float2 baseUV : TEXCOORD0;
-    float2 lightMapUV : TEXCOORD1;
-
+	float2 lightMapUV : TEXCOORD1;
 };
 //片元函数输入结构体
 struct Varyings {
@@ -40,7 +39,6 @@ float4 MetaPassFragment(Varyings input) : SV_TARGET{
 	surface.metallic = GetMetallic(input.baseUV);
 	surface.smoothness = GetSmoothness(input.baseUV);
 	BRDF brdf = GetBRDF(surface);
-	
 	float4 meta =0.0;
 	//若标记了X分量，则需要漫反射率
 	if (unity_MetaFragmentControl.x) {
@@ -48,10 +46,11 @@ float4 MetaPassFragment(Varyings input) : SV_TARGET{
 		meta.rgb += brdf.specular * brdf.roughness * 0.5;
 		meta.rgb = min(PositivePow(meta.rgb, unity_OneOverOutputBoost), unity_MaxOutputValue);
 	}
-    //若标记了Y分量，则返回自发光的颜色
+	//若标记了Y分量，则返回自发光的颜色
 	else if (unity_MetaFragmentControl.y) {
 		meta = float4(GetEmission(input.baseUV), 1.0);
 	}
 	return meta;
 }
+
 #endif

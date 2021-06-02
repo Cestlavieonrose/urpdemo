@@ -1,4 +1,4 @@
-//阴影数据相关库
+﻿//阴影采样相关库
 #ifndef CUSTOM_SHADOWS_INCLUDED
 #define CUSTOM_SHADOWS_INCLUDED
 
@@ -16,7 +16,6 @@
 #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
 #endif
 
-
 #define MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT 4
 #define MAX_CASCADE_COUNT 4
 //阴影图集
@@ -29,15 +28,27 @@ CBUFFER_START(_CustomShadows)
 //级联数量和包围球数据
 int _CascadeCount;
 float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
+//级联数据
 float4 _CascadeData[MAX_CASCADE_COUNT];
 //阴影转换矩阵
-float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT*MAX_CASCADE_COUNT];
-float _ShadowDistance;
+float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
 //阴影过渡距离
 float4 _ShadowDistanceFade;
+//图集大小
 float4 _ShadowAtlasSize;
 CBUFFER_END
-
+//定向光阴影的数据信息
+struct DirectionalShadowData {
+	float strength;
+	int tileIndex;
+	//法线偏差
+	float normalBias;
+	int shadowMaskChannel;
+};
+struct OtherShadowData {
+	float strength;
+	int shadowMaskChannel;
+};
 //阴影遮罩数据信息
 struct ShadowMask{
 	bool always;
@@ -46,8 +57,8 @@ struct ShadowMask{
 };
 
 //阴影数据
-struct ShadowData
-{
+struct ShadowData {
+	//级联索引
 	int cascadeIndex;
 	//是否采样阴影的标识
 	float strength;
@@ -56,37 +67,10 @@ struct ShadowData
 	//阴影遮罩
 	ShadowMask shadowMask;
 };
-
-struct OtherShadowData
-{
-	float strength;
-	int shadowMaskChannel;
-};
-
-//公式计算阴影过渡强度
-float FadedShadowStrength (float distance, float scale, float fade)
-{
-    return saturate((1.0 - distance*scale)*fade);
-}
-
-
-
-
-//阴影数据信息
-struct DirectionalShadowData
-{
-	float strength;
-	int tileIndex;
-	//法线偏差
-	float normalBias;
-	int shadowMaskChannel;
-};
-
 //采样阴影图集
 float SampleDirectionalShadowAtlas(float3 positionSTS) {
 	return SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTS);
 }
-
 //PCF滤波采样定向光阴影
 float FilterDirectionalShadow(float3 positionSTS) {
 #if defined(DIRECTIONAL_FILTER_SETUP)
@@ -108,7 +92,6 @@ float FilterDirectionalShadow(float3 positionSTS) {
 	return SampleDirectionalShadowAtlas(positionSTS);
 #endif
 }
-
 //得到级联阴影强度
 float GetCascadedShadow(DirectionalShadowData directional, ShadowData global, Surface surfaceWS) {
 	//计算法线偏移
@@ -118,13 +101,12 @@ float GetCascadedShadow(DirectionalShadowData directional, ShadowData global, Su
 	float shadow = FilterDirectionalShadow(positionSTS);
 	//如果级联混合小于1代表在级联层级过渡区域中，必须从下一个级联中采样并在两个值之间进行插值
 	if (global.cascadeBlend < 1.0) {
-		normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
+		normalBias = surfaceWS.normal *(directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
 		positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1], float4(surfaceWS.position + normalBias, 1.0)).xyz;
 		shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend);
 	}
 	return shadow;
 }
-
 //得到烘焙阴影的衰减值
 float GetBakedShadow(ShadowMask mask, int channel) {
 	float shadow = 1.0;
@@ -141,7 +123,6 @@ float GetBakedShadow(ShadowMask mask, int channel, float strength) {
 	}
 	return 1.0;
 }
-
 //混合烘焙和实时阴影
 float MixBakedAndRealtimeShadows(ShadowData global, float shadow, int shadowMaskChannel, float strength)
 {
@@ -158,8 +139,7 @@ float MixBakedAndRealtimeShadows(ShadowData global, float shadow, int shadowMask
 	//最终衰减结果是阴影强度和采样衰减的线性差值
 	return lerp(1.0, shadow, strength * global.strength);
 }
-
-//得到级联阴影强度
+//得到阴影衰减
 float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowData global, Surface surfaceWS) {
 	//如果材质没有定义接受阴影的宏
 #if !defined(_RECEIVE_SHADOWS)
@@ -178,32 +158,35 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directional, ShadowD
 	
 	return shadow;
 }
-
-
-float GetOtherShadowAttenuation(OtherShadowData other, ShadowData global, Surface surfaceWS) {
-//如果材质没有定义接受阴影的宏
+//得到非定向光源的阴影衰减
+float GetOtherShadowAttenuation(OtherShadowData other, ShadowData global, Surface surfaceWS) 
+{
 #if !defined(_RECEIVE_SHADOWS)
 	return 1.0;
 #endif
+
 	float shadow;
 	if (other.strength > 0.0) {
 		shadow = GetBakedShadow(global.shadowMask, other.shadowMaskChannel, other.strength);
 	}
-	else
-	{
+	else {
 		shadow = 1.0;
 	}
 	return shadow;
 }
+//公式计算阴影过渡时的强度
+float FadedShadowStrength (float distance, float scale, float fade) {
+	return saturate((1.0 - distance * scale) * fade);
+}
 
 //得到世界空间的表面阴影数据
-ShadowData GetShadowData(Surface surfaceWS) {
+ShadowData GetShadowData (Surface surfaceWS) {
 	ShadowData data;
 	data.shadowMask.always = false;
 	data.shadowMask.distance = false;
 	data.shadowMask.shadows = 1.0;
 	data.cascadeBlend = 1.0;
-	data.strength = FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
+	data.strength =FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
 	int i;
 	//如果物体表面到球心的平方距离小于球体半径的平方，就说明该物体在这层级联包围球中，得到合适的级联层级索引
 	for (i = 0; i < _CascadeCount; i++) {
@@ -220,7 +203,7 @@ ShadowData GetShadowData(Surface surfaceWS) {
 				data.cascadeBlend = fade;
 			}
 			break;
-
+		
 		}
 	}
 	//如果超出级联层数，不进行阴影采样
@@ -238,4 +221,6 @@ ShadowData GetShadowData(Surface surfaceWS) {
 	data.cascadeIndex = i;
 	return data;
 }
+
+
 #endif

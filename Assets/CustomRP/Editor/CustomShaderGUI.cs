@@ -6,38 +6,25 @@ using UnityEngine.Rendering;
 /// </summary>
 public class CustomShaderGUI : ShaderGUI
 {
-    
     MaterialEditor editor;
     Object[] materials;
     MaterialProperty[] properties;
     bool showPresets;
-
+    //投影模式:开启投影、裁剪投影、抖动投影、关闭投影
     enum ShadowMode
     {
         On, Clip, Dither, Off
     }
 
-    ShadowMode Shadows
-    {
-        set
-        {
-            if (SetProperty("_Shadows", (float)value))
-            {
-                SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
-                SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
-            }
-        }
-    }
-
-    public override void OnGUI(
-        MaterialEditor materialEditor, MaterialProperty[] properties
-    )
+    public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
         EditorGUI.BeginChangeCheck();
         base.OnGUI(materialEditor, properties);
         editor = materialEditor;
         materials = materialEditor.targets;
         this.properties = properties;
+        //进行烘焙自发光的设置
+        BakedEmission();
 
         EditorGUILayout.Space();
         showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true);
@@ -48,7 +35,6 @@ public class CustomShaderGUI : ShaderGUI
             FadePreset();
             TransparentPreset();
         }
-
         //如果材质属性有被更改，检查阴影模式的设置状态
         if (EditorGUI.EndChangeCheck())
         {
@@ -56,7 +42,26 @@ public class CustomShaderGUI : ShaderGUI
             CopyLightMappingProperties();
         }
     }
-
+    /// <summary>
+    /// 进行烘焙自发光的设置
+    /// </summary>
+    void BakedEmission()
+    {
+        EditorGUI.BeginChangeCheck();
+        editor.LightmapEmissionProperty();
+        //将自发光的Global Illumination属性在材质面板中暴露出来
+        if (EditorGUI.EndChangeCheck())
+        {
+            foreach (Material m in editor.targets)
+            {
+                
+                m.globalIlluminationFlags &=~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+            }
+        }
+    }
+    /// <summary>
+    /// 函数功能:若_BaseMap、_BaseColor属性值有修改，则将其同步到_MainTex和_Color中
+    /// </summary>
     void CopyLightMappingProperties()
     {
         MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
@@ -66,26 +71,11 @@ public class CustomShaderGUI : ShaderGUI
             mainTex.textureValue = baseMap.textureValue;
             mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
         }
-
         MaterialProperty color = FindProperty("_Color", properties, false);
         MaterialProperty baseColor = FindProperty("_BaseColor", properties, false);
         if (color != null && baseColor != null)
         {
             color.colorValue = baseColor.colorValue;
-        }
-    }
-
-    //烘焙自发光
-    void BakedEmission()
-    {
-        EditorGUI.BeginChangeCheck();
-        editor.LightmapEmissionProperty();
-        if (EditorGUI.EndChangeCheck())
-        {
-            foreach(Material m in editor.targets)
-            {
-                m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-            }
         }
     }
 
@@ -147,7 +137,7 @@ public class CustomShaderGUI : ShaderGUI
 
     bool PremultiplyAlpha
     {
-        set => SetProperty("_PremultiplyAlpha", "_PREMULTIPLY_ALPHA", value);
+        set => SetProperty("_PremulAlpha", "_PREMULTIPLY_ALPHA", value);
     }
 
     BlendMode SrcBlend
@@ -231,7 +221,7 @@ public class CustomShaderGUI : ShaderGUI
     }
     //如果shader的预乘属性不存在，不需要显示该渲染模式的按钮
     bool HasProperty(string name) => FindProperty(name, properties, false) != null;
-    bool HasPremultiplyAlpha => HasProperty("_PremultiplyAlpha");
+    bool HasPremultiplyAlpha => HasProperty("_PremulAlpha");
     /// <summary>
     /// 受光正确的透明材质默认设置
     /// </summary>
@@ -248,6 +238,17 @@ public class CustomShaderGUI : ShaderGUI
         }
     }
 
+    ShadowMode Shadows
+    {
+        set
+        {
+            if (SetProperty("_Shadows", (float)value))
+            {
+                SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
+                SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
+            }
+        }
+    }
     /// <summary>
     /// 设置材质的ShadowCaster pass块是否启用
     /// </summary>

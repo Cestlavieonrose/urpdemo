@@ -1,24 +1,18 @@
-//unity 标准输入库
-#ifndef CUSTOM_LIT_INPUT_INCLUDED
+﻿#ifndef CUSTOM_LIT_INPUT_INCLUDED
 #define CUSTOM_LIT_INPUT_INCLUDED
 
+TEXTURE2D(_EmissionMap);
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
-TEXTURE2D(_EmissionMap);
 
-
-//支持instancing的cbuff
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-//提供纹理的缩放和平移
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
 UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-
 UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
 UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
-UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
-
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 //基础纹理UV转换
@@ -45,18 +39,14 @@ float GetMetallic(float2 baseUV) {
 float GetSmoothness(float2 baseUV) {
 	return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 }
-
-float3 GetEmission(float2 baseUV) {
+//获取自发光纹理的采样数据
+float3 GetEmission (float2 baseUV) {
 	float4 map = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, baseUV);
 	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionColor);
 	return map.rgb * color.rgb;
 }
-
-float GetFresnel(float2 baseUV)
-{
+float GetFresnel (float2 baseUV) {
 	return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Fresnel);
 }
-
-
 
 #endif

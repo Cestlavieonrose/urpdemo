@@ -1,4 +1,4 @@
-//不受光着色器公用属性和方法库
+﻿//不受光着色器公用属性和方法库
 #ifndef CUSTOM_UNLIT_INPUT_INCLUDED
 #define CUSTOM_UNLIT_INPUT_INCLUDED
 
@@ -21,8 +21,6 @@ float2 TransformBaseUV(float2 baseUV) {
 float4 GetBase(float2 baseUV) {
 	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
 	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-
-	
 	return map * color;
 }
 
@@ -37,10 +35,10 @@ float GetMetallic(float2 baseUV) {
 float GetSmoothness(float2 baseUV) {
 	return 0;
 }
-
-float3 GetEmission(float2 baseUV) {
+float3 GetEmission (float2 baseUV) {
 	return GetBase(baseUV).rgb;
 }
-
-
+float GetFresnel (float2 baseUV) {
+	return 0.0;
+}
 #endif

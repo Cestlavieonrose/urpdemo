@@ -1,45 +1,49 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Collections;
-using UnityEditor;
+﻿using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
-using UnityEngine.Rendering;
-using Lightmapping = UnityEngine.Experimental.GlobalIllumination.Lightmapping;
-
-public partial class CustomRenderPipeline:RenderPipeline
+using LightType = UnityEngine.LightType;
+/// <summary>
+/// 自定义渲染管线实例:只用于编辑器
+/// </summary>
+public partial class CustomRenderPipeline
 {
 
     partial void InitializeForEditor();
 
 #if UNITY_EDITOR
-    static Lightmapping.RequestLightsDelegate lightsDelegate = 
+    //重写lightmapper设置光照数据
+    static Lightmapping.RequestLightsDelegate lightsDelegate =
         (Light[] lights, NativeArray<LightDataGI> output) => {
-            LightDataGI lightData = new LightDataGI();
+            var lightData = new LightDataGI();
             for (int i = 0; i < lights.Length; i++)
             {
                 Light light = lights[i];
                 switch (light.type)
                 {
-                    case UnityEngine.LightType.Directional:
+                    case LightType.Directional:
                         var directionalLight = new DirectionalLight();
+                        LightmapperUtils.Extract(light, ref directionalLight);
                         lightData.Init(ref directionalLight);
                         break;
-                    case UnityEngine.LightType.Point:
+                    case LightType.Point:
                         var pointLight = new PointLight();
                         LightmapperUtils.Extract(light, ref pointLight);
                         lightData.Init(ref pointLight);
                         break;
-                    case UnityEngine.LightType.Spot:
+                    case LightType.Spot:
                         var spotLight = new SpotLight();
                         LightmapperUtils.Extract(light, ref spotLight);
+                        spotLight.innerConeAngle =
+                            light.innerSpotAngle * Mathf.Deg2Rad;
+                        spotLight.angularFalloff =
+                            AngularFalloffType.AnalyticAndInnerAngle;
                         lightData.Init(ref spotLight);
                         break;
-                    case UnityEngine.LightType.Area:
-                        var rectLight = new RectangleLight();
-                        LightmapperUtils.Extract(light, ref rectLight);
-                        rectLight.mode = LightMode.Baked;
-                        lightData.Init(ref rectLight);
+                    case LightType.Area:
+                        var rectangleLight = new RectangleLight();
+                        LightmapperUtils.Extract(light, ref rectangleLight);
+                        rectangleLight.mode = LightMode.Baked;
+                        lightData.Init(ref rectangleLight);
                         break;
                     default:
                         lightData.InitNoBake(light.GetInstanceID());
@@ -49,18 +53,16 @@ public partial class CustomRenderPipeline:RenderPipeline
                 output[i] = lightData;
             }
         };
-
+    //通过unity编辑器中执行光照烘焙之前提供一个委托方法，来告诉Unity使用不同的衰减
     partial void InitializeForEditor()
     {
         Lightmapping.SetDelegate(lightsDelegate);
     }
-
     //清理和重置委托
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
         Lightmapping.ResetDelegate();
-
     }
 #endif
 }

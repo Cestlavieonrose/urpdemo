@@ -1,20 +1,21 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine;
 using UnityEditor;
-using UnityEngine;
 
+///扩展灯光属性面板
 [CanEditMultipleObjects]
-[CustomEditorForRenderPipeline(typeof(Light), typeof(CustomRenderPineAsset))]
-public class CustomLightEditor : LightEditor
+[CustomEditorForRenderPipeline(typeof(Light), typeof(CustomRenderPipelineAsset))]
+public class CustomLightEditor : LightEditor 
 {
-    //重写灯光Inspector面板
-    public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
-        if (!settings.lightType.hasMultipleDifferentValues && (LightType)settings.lightType.enumValueIndex == LightType.Spot)
-        {
-            settings.DrawInnerAndOuterSpotAngle();
-            settings.ApplyModifiedProperties();
-        }
-    }
+	//重写灯光属性面板
+	public override void OnInspectorGUI()
+	{
+		base.OnInspectorGUI();
+        //如果是聚光灯面板
+		if (!settings.lightType.hasMultipleDifferentValues &&(LightType)settings.lightType.enumValueIndex == LightType.Spot)
+		{
+            //绘制一个调节内外聚光角度滑块
+			settings.DrawInnerAndOuterSpotAngle();
+			settings.ApplyModifiedProperties();
+		}
+	}
 }
