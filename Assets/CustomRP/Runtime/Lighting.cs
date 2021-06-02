@@ -12,9 +12,13 @@ public class Lighting
     static int otherLightCountId = Shader.PropertyToID("_OtherLightCount");
     static int otherLightColorsId = Shader.PropertyToID("_OtherLightColors");
     static int otherLightPositionsId = Shader.PropertyToID("_OtherLightPosition");
+    static int otherLightDirsId = Shader.PropertyToID("_OtherLightDirections");
+    static int otherLightSpotAnglesId = Shader.PropertyToID("_OtherLightSpotAngles");
     //存储其他类型光源的颜色和位置数据
     static Vector4[] otherLightColors = new Vector4[maxOtherLightCount];
     static Vector4[] otherLightPositions = new Vector4[maxOtherLightCount];
+    static Vector4[] otherLightDirections = new Vector4[maxOtherLightCount];
+    static Vector4[] otherLightSpotAngles = new Vector4[maxOtherLightCount];
 
     const string bufferName = "Lighting";
     CommandBuffer buffer = new CommandBuffer
@@ -91,6 +95,12 @@ public class Lighting
                         SetupPointLight(otherLightCount++, ref visibleLight);
                     }
                     break;
+                case LightType.Spot:
+                    if (otherLightCount < maxOtherLightCount)
+                    {
+                        SetupSpotLight(otherLightCount++, ref visibleLight);
+                    }
+                    break;
             }
             
         }
@@ -108,6 +118,9 @@ public class Lighting
         {
             buffer.SetGlobalVectorArray(otherLightColorsId, otherLightColors);
             buffer.SetGlobalVectorArray(otherLightPositionsId, otherLightPositions);
+            buffer.SetGlobalVectorArray(otherLightDirsId, otherLightDirections);
+            buffer.SetGlobalVectorArray(otherLightSpotAnglesId, otherLightSpotAngles);
+            
         }
         
     }
@@ -118,6 +131,23 @@ public class Lighting
         Vector4 position = light.localToWorldMatrix.GetColumn(3);
         position.w = 1.0f/Mathf.Max(light.range*light.range, 0.00001f);
         otherLightPositions[index] = position;
+        otherLightSpotAngles[index] = new Vector4(0f, 1f);
+    }
+
+    void SetupSpotLight(int index, ref VisibleLight light)
+    {
+        otherLightColors[index] = light.finalColor;
+        Vector4 position = light.localToWorldMatrix.GetColumn(3);
+        position.w = 1.0f / Mathf.Max(light.range * light.range, 0.00001f);
+        otherLightPositions[index] = position;
+        //本地到世界转换矩阵的第三列求反得到光照方向
+        otherLightDirections[index] = -light.localToWorldMatrix.GetColumn(2);
+        //Debug.Log("SetupSpotLight:" + index + " dir:" + otherLightDirections[index]);
+        Light l = light.light;
+        float innerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * l.innerSpotAngle);
+        float outerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.spotAngle);
+        float angleRangeInv = 1f / Mathf.Max(innerCos - outerCos, 0.001f);
+        otherLightSpotAngles[index] = new Vector4(angleRangeInv, -outerCos * angleRangeInv);
     }
 
     //释放阴影贴图

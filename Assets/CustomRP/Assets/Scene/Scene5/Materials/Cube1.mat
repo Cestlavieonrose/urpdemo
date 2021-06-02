@@ -65,6 +65,7 @@ Material:
     - _Cutoff: 0.05
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _Fresnel: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -76,7 +77,7 @@ Material:
     - _PremultiplyAlpha: 0
     - _ReceiveShadows: 0
     - _Shadows: 0
-    - _Smoothness: 0.7
+    - _Smoothness: 0.329
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -84,5 +85,5 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0.5550813, g: 0.9150943, b: 0.15970986, a: 1}
-    - _Color: {r: 0.49338877, g: 0.9339623, b: 0.013216423, a: 1}
+    - _Color: {r: 0.5550813, g: 0.9150943, b: 0.15970981, a: 1}
     - _EmissionColor: {r: 0.6132076, g: 0.29792634, b: 0.29792634, a: 1}

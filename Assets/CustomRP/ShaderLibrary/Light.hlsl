@@ -17,6 +17,8 @@ CBUFFER_START(_CustomLight)
 	int _OtherLightCount;
 	float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];
 	float4 _OtherLightPosition[MAX_OTHER_LIGHT_COUNT];
+	float4 _OtherLightDirections[MAX_OTHER_LIGHT_COUNT];
+	float4 _OtherLightSpotAngles[MAX_OTHER_LIGHT_COUNT];
 CBUFFER_END
 
 int GetOtherLightCount()
@@ -71,9 +73,12 @@ Light GetOtherLight(int index, Surface surfaceWS, ShadowData shadowData)
 	light.direction = normalize(ray);
 	//光照强度随距离衰减
 	float distanceSqr = max(dot(ray, ray), 0.00001);
+	float4 spotAngles = _OtherLightSpotAngles[index];
 	//到一定距离后就衰减为0
 	float rangeAtten = Square(saturate(1.0-Square(distanceSqr*_OtherLightPosition[index].w)));
-	light.attenuation = rangeAtten/distanceSqr;
+	//得到聚光灯衰
+	FLOAT SpotAtten = Square(saturate(dot(_OtherLightDirections[index].xyz, light.direction)*spotAngles.x + spotAngles.y));
+	light.attenuation = SpotAtten*rangeAtten/distanceSqr;
 	return light;
 }
 
