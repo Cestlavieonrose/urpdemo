@@ -19,6 +19,7 @@ CBUFFER_START(_CustomLight)
 	float4 _OtherLightPosition[MAX_OTHER_LIGHT_COUNT];
 	float4 _OtherLightDirections[MAX_OTHER_LIGHT_COUNT];
 	float4 _OtherLightSpotAngles[MAX_OTHER_LIGHT_COUNT];
+	float4 _OtherLightShadowData[MAX_OTHER_LIGHT_COUNT];
 CBUFFER_END
 
 int GetOtherLightCount()
@@ -48,6 +49,7 @@ DirectionalShadowData GetDirectionalShadowData(int lightIndex, ShadowData shadow
 	data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
 	//获取灯光的法线偏差值
 	data.normalBias = _DirectionalLightShadowData[lightIndex].z;
+	data.shadowMaskChannel = _DirectionalLightShadowData[lightIndex].w;
 	return data;
 }
 
@@ -64,6 +66,14 @@ Light GetDirectionalLight (int index,Surface surfaceWS, ShadowData shadowData) {
 	return light;
 }
 
+
+OtherShadowData GetOtherShadowData(int lightIndex) {
+	OtherShadowData data;
+	data.strength = _OtherLightShadowData[lightIndex].x;
+	data.shadowMaskChannel = _OtherLightShadowData[lightIndex].w;
+	return data;
+}
+
 //获取指定索引的非定向光源数据
 Light GetOtherLight(int index, Surface surfaceWS, ShadowData shadowData)
 {
@@ -77,8 +87,9 @@ Light GetOtherLight(int index, Surface surfaceWS, ShadowData shadowData)
 	//到一定距离后就衰减为0
 	float rangeAtten = Square(saturate(1.0-Square(distanceSqr*_OtherLightPosition[index].w)));
 	//得到聚光灯衰
-	FLOAT SpotAtten = Square(saturate(dot(_OtherLightDirections[index].xyz, light.direction)*spotAngles.x + spotAngles.y));
-	light.attenuation = SpotAtten*rangeAtten/distanceSqr;
+	float SpotAtten = Square(saturate(dot(_OtherLightDirections[index].xyz, light.direction)*spotAngles.x + spotAngles.y));
+	OtherShadowData otherShadowData = GetOtherShadowData(index);
+	light.attenuation = GetOtherShadowAttenuation(otherShadowData, shadowData, surfaceWS)*SpotAtten*rangeAtten/distanceSqr;
 	return light;
 }
 
