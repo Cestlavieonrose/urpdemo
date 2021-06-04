@@ -5,11 +5,11 @@
 [CreateAssetMenu(menuName = "Rendering/Custom Post FX Settings")]
 public class PostFXSettings : ScriptableObject 
 {
-    // [SerializeField]
-    // Shader shader = default;
+    [SerializeField]
+    Shader shader = default;
 
-	// [System.NonSerialized]
-	// Material material;
+	[System.NonSerialized]
+	Material material;
 	// [System.Serializable]
 	// public struct BloomSettings
 	// {
@@ -36,16 +36,16 @@ public class PostFXSettings : ScriptableObject
 	// BloomSettings bloom = default;
 
 	// public BloomSettings Bloom => bloom;
-	// public Material Material
-	// {
-	// 	get
-	// 	{
-	// 		if (material == null && shader != null)
-	// 		{
-	// 			material = new Material(shader);
-	// 			material.hideFlags = HideFlags.HideAndDontSave;
-	// 		}
-	// 		return material;
-	// 	}
-	// }
+	public Material Material
+	{
+		get
+		{
+			if (material == null && shader != null)
+			{
+				material = new Material(shader);
+				material.hideFlags = HideFlags.HideAndDontSave;
+			}
+			return material;
+		}
+	}
 }

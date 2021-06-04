@@ -12,6 +12,8 @@ public partial class CameraRenderer
     partial void DrawUnsupportedShaders();
     partial void DrawGizmos();
     partial void PrepareForSceneWindow();
+    partial void DrawGizmosBeforeFX();
+    partial void DrawGizmosAfterFX();
 
     partial void PrepareBuffer();
 #if UNITY_EDITOR
@@ -53,12 +55,23 @@ public partial class CameraRenderer
         //绘制不支持的shaderTag类型的物体
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
     }
-    //绘制DrawGizmos
-    partial void DrawGizmos()
+        /// <summary>
+    /// 在后处理之前绘制DrawGizmos
+    /// </summary>
+    partial void DrawGizmosBeforeFX()
     {
         if (Handles.ShouldRenderGizmos())
         {
             context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
+        }
+    }
+    /// <summary>
+    /// 在后处理之后绘制DrawGizmos
+    /// </summary>
+    partial void DrawGizmosAfterFX()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
             context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
         }
     }

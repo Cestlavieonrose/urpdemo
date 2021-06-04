@@ -24,6 +24,10 @@ public partial class CameraRenderer
     static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
     //光照实例
     Lighting lighting = new Lighting();
+
+    PostFXStack postFXStack = new PostFXStack();
+    //相机的帧缓冲区
+    static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
     /// <summary>
     /// 相机渲染
     /// </summary>
@@ -45,6 +49,7 @@ public partial class CameraRenderer
         ExecuteBuffer();
 
         lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject);
+        postFXStack.Setup(context, camera, postFXSettings);
         buffer.EndSample(SampleName);
         Setup();
 
@@ -54,13 +59,33 @@ public partial class CameraRenderer
         DrawUnsupportedShaders();
 
         //绘制Gizmos
-        DrawGizmos();
+        DrawGizmosBeforeFX();
+        if (postFXStack.IsActive)
+        {
+            postFXStack.Render(frameBufferId);
+        }
+        DrawGizmosAfterFX();
+
         // 释放申请的RT内存空间
-        lighting.Cleanup();
+        Cleanup();
 
         //提交命令缓冲区
         Submit();
     }
+
+    /// <summary>
+    /// 释放申请的RT内存空间
+    /// </summary>
+    void Cleanup()
+    {
+        
+        lighting.Cleanup();
+        if (postFXStack.IsActive)
+        {
+            buffer.ReleaseTemporaryRT(frameBufferId);
+        }
+    }
+
 
     /// <summary>
     /// 绘制几何体
@@ -116,6 +141,17 @@ public partial class CameraRenderer
         context.SetupCameraProperties(camera);
         //得到相机的clear flags
         CameraClearFlags flags = camera.clearFlags;
+        // Debug.Log("camera setup:" + postFXStack.IsActive);;
+        if (postFXStack.IsActive)
+        {
+            if (flags > CameraClearFlags.Color)
+            {
+                flags = CameraClearFlags.Color;
+            }
+            buffer.GetTemporaryRT(frameBufferId, camera.pixelWidth, camera.pixelHeight,32, FilterMode.Bilinear, RenderTextureFormat.Default);
+            buffer.SetRenderTarget(frameBufferId,RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        }
+
         //设置相机清除状态
         buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
             flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
