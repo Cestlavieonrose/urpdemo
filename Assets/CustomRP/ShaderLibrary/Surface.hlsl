@@ -17,6 +17,7 @@ struct Surface {
 	//菲涅尔反射强度
 	float fresnelStrength;
 
+	float3 interpolatedNormal;
 };
 
 #endif

@@ -104,6 +104,7 @@ float3 SampleEnvironment (Surface surfaceWS, BRDF brdf) {
 	//通过感知粗糙度来计算出正确的mipmap级别
 	float mip = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
 	float4 environment = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip);
+	//return environment.rgb;
 	return DecodeHDREnvironment(environment, unity_SpecCube0_HDR);
 }
 //得到全局照明数据
