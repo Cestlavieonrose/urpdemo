@@ -28,7 +28,7 @@ public partial class CameraRenderer
     /// 相机渲染
     /// </summary>
     public void Render(ScriptableRenderContext context, Camera camera,
-        bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,ShadowSettings shadowSettings)
+        bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,ShadowSettings shadowSettings, PostFXSettings postFXSettings)
     {
         this.context = context;
         this.camera = camera;
