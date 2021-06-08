@@ -28,10 +28,12 @@ public partial class CameraRenderer
     PostFXStack postFXStack = new PostFXStack();
     //相机的帧缓冲区
     static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+
+    bool useHDR;
     /// <summary>
     /// 相机渲染
     /// </summary>
-    public void Render(ScriptableRenderContext context, Camera camera,
+    public void Render(ScriptableRenderContext context, Camera camera, bool allowHDR,
         bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,ShadowSettings shadowSettings, PostFXSettings postFXSettings)
     {
         this.context = context;
@@ -45,11 +47,14 @@ public partial class CameraRenderer
         {
             return;
         }
+
+        useHDR = allowHDR && camera.allowHDR;
+
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
 
         lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject);
-        postFXStack.Setup(context, camera, postFXSettings);
+        postFXStack.Setup(context, camera, postFXSettings, useHDR);
         buffer.EndSample(SampleName);
         Setup();
 
@@ -145,7 +150,8 @@ public partial class CameraRenderer
             {
                 flags = CameraClearFlags.Color;
             }
-            buffer.GetTemporaryRT(frameBufferId, camera.pixelWidth, camera.pixelHeight,32, FilterMode.Bilinear, RenderTextureFormat.Default);
+            buffer.GetTemporaryRT(frameBufferId, camera.pixelWidth, camera.pixelHeight,32, FilterMode.Bilinear, 
+                useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
             buffer.SetRenderTarget(frameBufferId,RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         }
         //设置相机清除状态

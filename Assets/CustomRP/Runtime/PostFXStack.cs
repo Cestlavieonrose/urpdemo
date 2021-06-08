@@ -19,6 +19,7 @@ public partial class PostFXStack
 	ScriptableRenderContext context;
 	Camera camera;
 	PostFXSettings settings;
+	bool useHDR;
 	//最大纹理金字塔级别
 	const int maxBloomPyramidLevels = 16;
 	//纹理标识符
@@ -44,8 +45,9 @@ public partial class PostFXStack
 		}
 	}
     //初始化设置
-	public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings)
+	public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings, bool useHDR)
 	{
+		this.useHDR = useHDR;
 		this.context = context;
 		this.camera = camera;
 		this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;
@@ -101,7 +103,7 @@ public partial class PostFXStack
 		threshold.y -= threshold.x;
 		buffer.SetGlobalVector(bloomThresholdId, threshold);
 
-		RenderTextureFormat format = RenderTextureFormat.Default;
+		RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
 		buffer.GetTemporaryRT(bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format);
 		Draw(sourceId, bloomPrefilterId, Pass.BloomPrefilter);
 		width /= 2;
