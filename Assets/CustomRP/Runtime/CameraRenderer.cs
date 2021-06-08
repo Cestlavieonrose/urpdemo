@@ -65,14 +65,12 @@ public partial class CameraRenderer
             postFXStack.Render(frameBufferId);
         }
         DrawGizmosAfterFX();
-
         // 释放申请的RT内存空间
         Cleanup();
 
         //提交命令缓冲区
         Submit();
     }
-
     /// <summary>
     /// 释放申请的RT内存空间
     /// </summary>
@@ -85,7 +83,6 @@ public partial class CameraRenderer
             buffer.ReleaseTemporaryRT(frameBufferId);
         }
     }
-
 
     /// <summary>
     /// 绘制几何体
@@ -141,7 +138,7 @@ public partial class CameraRenderer
         context.SetupCameraProperties(camera);
         //得到相机的clear flags
         CameraClearFlags flags = camera.clearFlags;
-        // Debug.Log("camera setup:" + postFXStack.IsActive);;
+
         if (postFXStack.IsActive)
         {
             if (flags > CameraClearFlags.Color)
@@ -151,7 +148,6 @@ public partial class CameraRenderer
             buffer.GetTemporaryRT(frameBufferId, camera.pixelWidth, camera.pixelHeight,32, FilterMode.Bilinear, RenderTextureFormat.Default);
             buffer.SetRenderTarget(frameBufferId,RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         }
-
         //设置相机清除状态
         buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
             flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);

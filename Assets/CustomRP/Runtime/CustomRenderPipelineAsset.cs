@@ -21,8 +21,6 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
     //后处理配置
     [SerializeField]
     PostFXSettings postFXSettings = default;
-
-
     //重写抽象方法，需要返回一个RenderPipeline实例对象
     protected override RenderPipeline CreatePipeline()
     {
