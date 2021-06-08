@@ -49,7 +49,7 @@ public partial class PostFXStack
 		this.context = context;
 		this.camera = camera;
 		this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;
-		// ApplySceneViewState();
+		ApplySceneViewState();
 	}
     /// <summary>
     /// 将源数据绘制到指定渲染目标中

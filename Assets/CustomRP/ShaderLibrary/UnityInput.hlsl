@@ -37,4 +37,6 @@ CBUFFER_END
 float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
+//通过判断这个向量的x分量是否韦附属，然后可以确定UV坐标原点是在左下角还是左上角
+float4 _ProjectionParams;
 #endif

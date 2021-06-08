@@ -7,9 +7,9 @@ struct Varyings {
 	float2 screenUV : VAR_SCREEN_UV;
 };
 
-// TEXTURE2D(_PostFXSource);
+TEXTURE2D(_PostFXSource);
 // TEXTURE2D(_PostFXSource2);
-// SAMPLER(sampler_linear_clamp);
+SAMPLER(sampler_linear_clamp);
 
 // float4 _PostFXSource_TexelSize;
 // bool _BloomBicubicUpsampling;
@@ -19,10 +19,11 @@ struct Varyings {
 // float4 GetSourceTexelSize () {
 // 	return _PostFXSource_TexelSize;
 // }
-// //采样源纹理
-// float4 GetSource(float2 screenUV) {
-// 	return SAMPLE_TEXTURE2D_LOD(_PostFXSource, sampler_linear_clamp, screenUV, 0);
-// }
+//采样源纹理
+float4 GetSource(float2 screenUV) {
+	//最后一个参数0表示mipmap级别 因为没有mipmap 所以强制避开
+	return SAMPLE_TEXTURE2D_LOD(_PostFXSource, sampler_linear_clamp, screenUV, 0);
+}
 // //采样第二个源纹理
 // float4 GetSource2(float2 screenUV) {
 // 	return SAMPLE_TEXTURE2D_LOD(_PostFXSource2, sampler_linear_clamp, screenUV, 0);
@@ -47,15 +48,14 @@ Varyings DefaultPassVertex (uint vertexID : SV_VertexID) {
 	//使用顶点标识Id生成固定的顶点位置和UV坐标。其中三角形顶点坐标为分别为(-1,-1)，(-1,3)，（3,-1）,要使可见的 UV 坐标覆盖0到1的范围，则对应的UV坐标为(0,0)，（0,2）（2,0）
 	output.positionCS = float4(vertexID <= 1 ? -1.0 : 3.0,vertexID == 1 ? 3.0 : -1.0,0.0, 1.0);
 	output.screenUV = float2(vertexID <= 1 ? 0.0 : 2.0,vertexID == 1 ? 2.0 : 0.0);
-	// if (_ProjectionParams.x < 0.0) {
-	// 	output.screenUV.y = 1.0 - output.screenUV.y;
-	// }
+	if (_ProjectionParams.x < 0.0) {
+		output.screenUV.y = 1.0 - output.screenUV.y;
+	}
 	return output;
 }
 //采样源纹理
 float4 CopyPassFragment (Varyings input) : SV_TARGET {
-	// return GetSource(input.screenUV);
-	return float4(input.screenUV, 0.0, 1.0);
+	return GetSource(input.screenUV);
 }
 // //在水平方向的进行滤波
 // float4 BloomHorizontalPassFragment (Varyings input) : SV_TARGET {
@@ -101,5 +101,5 @@ float4 CopyPassFragment (Varyings input) : SV_TARGET {
 // float4 BloomPrefilterPassFragment (Varyings input) : SV_TARGET {
 // 	float3 color = ApplyBloomThreshold(GetSource(input.screenUV).rgb);
 // 	return float4(color, 1.0);
-}
+//}
 #endif
